@@ -1,11 +1,25 @@
 # Prerequisites
 *.d
+*.vs
+
+# Folders
+Bin/
+intermediate/
+Temp/
+Lib/
 
 # Compiled Object files
 *.slo
 *.lo
 *.o
 *.obj
+
+# Debug
+*.pdb
+*.ilk
+*.exp
+*.idb
+*.log
 
 # Precompiled Headers
 *.gch
@@ -14,7 +28,6 @@
 # Compiled Dynamic libraries
 *.so
 *.dylib
-*.dll
 
 # Fortran module files
 *.mod
@@ -24,7 +37,6 @@
 *.lai
 *.la
 *.a
-*.lib
 
 # Executables
 *.exe
