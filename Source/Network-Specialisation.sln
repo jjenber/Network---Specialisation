@@ -10,6 +10,9 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Client", "Client\Client.vcxproj", "{AE21C95C-6902-419C-9A0A-4F5116F66FE7}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ServerAdmin", "ServerAdmin\ServerAdmin.vcxproj", "{5DBA2FE7-E721-4779-85D8-605A3A77C6C8}"
+	ProjectSection(ProjectDependencies) = postProject
+		{39F2CF4F-227D-456D-8C4F-CCBCD36A3CBA} = {39F2CF4F-227D-456D-8C4F-CCBCD36A3CBA}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ImGui", "ImGui\ImGui.vcxproj", "{39F2CF4F-227D-456D-8C4F-CCBCD36A3CBA}"
 EndProject
