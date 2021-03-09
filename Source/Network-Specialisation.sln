@@ -7,6 +7,12 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MainServer", "MainServer\Ma
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Shared", "Shared\Shared.vcxproj", "{9DDDCFD9-6C98-40FA-9632-C7B08D9E40EA}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Client", "Client\Client.vcxproj", "{AE21C95C-6902-419C-9A0A-4F5116F66FE7}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ServerAdmin", "ServerAdmin\ServerAdmin.vcxproj", "{5DBA2FE7-E721-4779-85D8-605A3A77C6C8}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ImGui", "ImGui\ImGui.vcxproj", "{39F2CF4F-227D-456D-8C4F-CCBCD36A3CBA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -21,6 +27,18 @@ Global
 		{9DDDCFD9-6C98-40FA-9632-C7B08D9E40EA}.Debug|x64.Build.0 = Debug|x64
 		{9DDDCFD9-6C98-40FA-9632-C7B08D9E40EA}.Release|x64.ActiveCfg = Release|x64
 		{9DDDCFD9-6C98-40FA-9632-C7B08D9E40EA}.Release|x64.Build.0 = Release|x64
+		{AE21C95C-6902-419C-9A0A-4F5116F66FE7}.Debug|x64.ActiveCfg = Debug|x64
+		{AE21C95C-6902-419C-9A0A-4F5116F66FE7}.Debug|x64.Build.0 = Debug|x64
+		{AE21C95C-6902-419C-9A0A-4F5116F66FE7}.Release|x64.ActiveCfg = Release|x64
+		{AE21C95C-6902-419C-9A0A-4F5116F66FE7}.Release|x64.Build.0 = Release|x64
+		{5DBA2FE7-E721-4779-85D8-605A3A77C6C8}.Debug|x64.ActiveCfg = Debug|x64
+		{5DBA2FE7-E721-4779-85D8-605A3A77C6C8}.Debug|x64.Build.0 = Debug|x64
+		{5DBA2FE7-E721-4779-85D8-605A3A77C6C8}.Release|x64.ActiveCfg = Release|x64
+		{5DBA2FE7-E721-4779-85D8-605A3A77C6C8}.Release|x64.Build.0 = Release|x64
+		{39F2CF4F-227D-456D-8C4F-CCBCD36A3CBA}.Debug|x64.ActiveCfg = Debug|x64
+		{39F2CF4F-227D-456D-8C4F-CCBCD36A3CBA}.Debug|x64.Build.0 = Debug|x64
+		{39F2CF4F-227D-456D-8C4F-CCBCD36A3CBA}.Release|x64.ActiveCfg = Release|x64
+		{39F2CF4F-227D-456D-8C4F-CCBCD36A3CBA}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
