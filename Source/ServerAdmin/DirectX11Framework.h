@@ -17,11 +17,13 @@ public:
 	ID3D11Device* GetDevice() { return myDevice; }
 	ID3D11DeviceContext* GetContext() { return myContext; }
 
+	void UpdateResizeWindow(unsigned int aWidth, unsigned int aHeight);
+
 private:
 	bool CreateSwapChain(Window& aWindow);
 	bool CreateBackBufferAndRenderTargetView();
 	bool CreateDepthBuffer(Window& aWindow);
-	bool CreateAndSetViewport(Window& aWindow);
+	bool CreateAndSetViewport(unsigned int aWidth, unsigned int aHeight);
 
 	IDXGISwapChain* mySwapChain;
 	ID3D11Device* myDevice;

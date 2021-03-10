@@ -37,8 +37,35 @@ static ImFont* ImGui_LoadFont(ImFontAtlas& atlas, const char* name, float size, 
 }
 ImFontAtlas fontAtlas;
 
-// Forward declare message handler from imgui_impl_win32.cpp
-extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+void OnWindowResize(DirectX11Framework& aDirectX11Framework, Window& aWindow);
+
+#pragma region ConsoleInit
+void InitConsole()
+{
+#pragma warning( push )
+#pragma warning( disable : 4996 )
+#pragma warning( disable : 6031 )
+    AllocConsole();
+    freopen("CONIN$", "r", stdin);
+    freopen("CONOUT$", "w", stdout);
+    freopen("CONOUT$", "w", stderr);
+
+    setbuf(stdin, NULL);
+    setbuf(stdout, NULL);
+    setbuf(stderr, NULL);
+
+#pragma warning( pop )
+}
+void CloseConsole()
+{
+#pragma warning( push )
+#pragma warning( disable : 4996 )
+    fclose(stdin);
+    fclose(stdout);
+    fclose(stderr);
+#pragma warning( pop )
+}
+#pragma endregion ConsoleInit
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
@@ -48,8 +75,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);
 
-    std::unique_ptr<Window> window = Window::Create(L"Server Admin", 0, 0, 800, 600);
+    InitConsole();
+
     DirectX11Framework dx11;
+    std::unique_ptr<Window> window = Window::Create(L"Server Admin", 200, 100, 800, 600);
     dx11.Init(*window);
 
     auto font = ImGui_LoadFont(fontAtlas, "segoeui.ttf", 18.0f);
@@ -60,6 +89,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     ImGui::StyleColorsDark();
 
     bool run = true;
+    int hits = 0;
     while (run)
     {
         MSG msg = { 0 };
@@ -68,11 +98,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
             TranslateMessage(&msg);
             DispatchMessage(&msg);
 
-            if (ImGui_ImplWin32_WndProcHandler(msg.hwnd, msg.message, msg.wParam, msg.lParam))
+            if (msg.message == USER_EVENT_RESIZE)
             {
-                continue;
+                OnWindowResize(dx11, *window);
             }
-            if (msg.message == WM_QUIT)
+            else if (msg.message == WM_QUIT)
             {
                 run = false;
             }
@@ -84,7 +114,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         ImGui::NewFrame();
 
         // 
-        ImGui::Begin("Editor");
+        ImGui::Begin("Main Server");
 
         ImGui::End();
 
@@ -99,4 +129,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     ImGui::DestroyContext();
     
     return 0;
+}
+
+void OnWindowResize(DirectX11Framework& aDirectX11Framework, Window& aWindow)
+{
+    RECT rect;
+    GetWindowRect(aWindow.GetHWND(), &rect);
+    aDirectX11Framework.UpdateResizeWindow(rect.right - rect.left, rect.bottom - rect.top);
 }

@@ -46,6 +46,16 @@
         mySwapChain->Present(1, 0);
     }
     
+    void DirectX11Framework::UpdateResizeWindow(unsigned int aWidth, unsigned int aHeight)
+    {
+        myContext->OMSetRenderTargets(0, 0, 0);
+        myBackBuffer->Release();
+        mySwapChain->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN, 0);
+        CreateBackBufferAndRenderTargetView();
+        myContext->OMSetRenderTargets(1, &myBackBuffer, NULL);
+        CreateAndSetViewport(aWidth, aHeight);
+    }
+
     bool DirectX11Framework::CreateSwapChain(Window& aWindow)
     {
         HRESULT result;
@@ -103,13 +113,13 @@
         return true;
     }
 
-    bool DirectX11Framework::CreateAndSetViewport(Window& aWindow)
+    bool DirectX11Framework::CreateAndSetViewport(unsigned int aWidth, unsigned int aHeight)
     {
         D3D11_VIEWPORT viewport = { 0 };
         viewport.TopLeftX = 0.0f;
         viewport.TopLeftY = 0.0f;
-        viewport.Width = static_cast<float>(aWindow.GetWidth());
-        viewport.Height = static_cast<float>(aWindow.GetHeight());
+        viewport.Width  = static_cast<float>(aWidth);
+        viewport.Height = static_cast<float>(aHeight);
         viewport.MinDepth = 0.0f;
         viewport.MaxDepth = 1.0f;
         myContext->RSSetViewports(1, &viewport);

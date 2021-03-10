@@ -87,14 +87,29 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Address\Address.h" />
+    <ClInclude Include="Client\Client.h" />
+    <ClInclude Include="Context\Context.h" />
     <ClInclude Include="framework.h" />
+    <ClInclude Include="NetMessage.hpp" />
+    <ClInclude Include="NetMessageQueue.hpp" />
+    <ClInclude Include="Config.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="Server\Server.h" />
+    <ClInclude Include="Socket\Socket.h" />
+    <ClInclude Include="Socket\UDPSocket.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Address\Address.cpp" />
+    <ClCompile Include="Client\Client.cpp" />
+    <ClCompile Include="Context\Context.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="Server\Server.cpp" />
+    <ClCompile Include="Socket\Socket.cpp" />
+    <ClCompile Include="Socket\UDPSocket.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

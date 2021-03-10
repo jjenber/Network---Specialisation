@@ -4,6 +4,21 @@
     <Filter Include="Precompiled">
       <UniqueIdentifier>{5f0cba3b-5586-4522-b4c5-cbc3cc0e666f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Socket">
+      <UniqueIdentifier>{4a7fc01a-3719-489f-bb5f-b0db1252458b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Address">
+      <UniqueIdentifier>{c8180423-3947-4f95-b837-9207857bdf55}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Client">
+      <UniqueIdentifier>{63c4a564-1bac-415e-ac74-5dc4878807ed}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Context">
+      <UniqueIdentifier>{c5369340-eff4-44d7-a3e1-53499385db65}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Server">
+      <UniqueIdentifier>{cbf8b97c-295a-461c-b52a-9a1623dae30d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -12,10 +27,49 @@
     <ClInclude Include="pch.h">
       <Filter>Precompiled</Filter>
     </ClInclude>
+    <ClInclude Include="NetMessageQueue.hpp" />
+    <ClInclude Include="NetMessage.hpp" />
+    <ClInclude Include="Config.h" />
+    <ClInclude Include="Socket\UDPSocket.h">
+      <Filter>Socket</Filter>
+    </ClInclude>
+    <ClInclude Include="Socket\Socket.h">
+      <Filter>Socket</Filter>
+    </ClInclude>
+    <ClInclude Include="Address\Address.h">
+      <Filter>Address</Filter>
+    </ClInclude>
+    <ClInclude Include="Client\Client.h">
+      <Filter>Client</Filter>
+    </ClInclude>
+    <ClInclude Include="Context\Context.h">
+      <Filter>Context</Filter>
+    </ClInclude>
+    <ClInclude Include="Server\Server.h">
+      <Filter>Server</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
       <Filter>Precompiled</Filter>
+    </ClCompile>
+    <ClCompile Include="Socket\UDPSocket.cpp">
+      <Filter>Socket</Filter>
+    </ClCompile>
+    <ClCompile Include="Socket\Socket.cpp">
+      <Filter>Socket</Filter>
+    </ClCompile>
+    <ClCompile Include="Address\Address.cpp">
+      <Filter>Address</Filter>
+    </ClCompile>
+    <ClCompile Include="Client\Client.cpp">
+      <Filter>Client</Filter>
+    </ClCompile>
+    <ClCompile Include="Context\Context.cpp">
+      <Filter>Context</Filter>
+    </ClCompile>
+    <ClCompile Include="Server\Server.cpp">
+      <Filter>Server</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
