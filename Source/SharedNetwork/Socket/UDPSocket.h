@@ -8,8 +8,6 @@ namespace Network
 		UDPSocket();
 		int Send(const char* aDataBuf, int aBufLen, const Address& aAddress);
 		int Receive(const char* aDataBuf, int aBufLen, const Address& aAddress, int& aReceivedLength);
-	private:
-		SOCKET mySocket;
 	};
 }
 

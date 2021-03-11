@@ -28,7 +28,6 @@
       <Filter>Precompiled</Filter>
     </ClInclude>
     <ClInclude Include="NetMessageQueue.hpp" />
-    <ClInclude Include="NetMessage.hpp" />
     <ClInclude Include="Config.h" />
     <ClInclude Include="Socket\UDPSocket.h">
       <Filter>Socket</Filter>
@@ -48,6 +47,7 @@
     <ClInclude Include="Server\Server.h">
       <Filter>Server</Filter>
     </ClInclude>
+    <ClInclude Include="NetMessage.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -71,5 +71,6 @@
     <ClCompile Include="Server\Server.cpp">
       <Filter>Server</Filter>
     </ClCompile>
+    <ClCompile Include="NetMessage.cpp" />
   </ItemGroup>
 </Project>

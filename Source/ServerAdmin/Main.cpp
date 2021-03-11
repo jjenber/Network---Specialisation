@@ -5,6 +5,10 @@
 #include "ServerAdmin.h"
 #include "Window.h"
 #include "DirectX11Framework.h"
+
+#include "Context\Context.h"
+#include "Server\Server.h"
+
 #include <string>
 #include <imgui.h>
 #include <imgui_impl_win32.h>
@@ -88,8 +92,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     ImGui_ImplDX11_Init(dx11.GetDevice(), dx11.GetContext());
     ImGui::StyleColorsDark();
 
+    Network::Context context;
+    Network::Server mainServer;
+    mainServer.Startup();
+
     bool run = true;
-    int hits = 0;
     while (run)
     {
         MSG msg = { 0 };
@@ -113,9 +120,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         ImGui_ImplWin32_NewFrame();
         ImGui::NewFrame();
 
-        // 
+         
         ImGui::Begin("Main Server");
-
+        mainServer.Update();
         ImGui::End();
 
 
