@@ -3,7 +3,7 @@
 #include "NetMessage.h"
 
 Network::ChatMessage::ChatMessage(const std::string& aMessage)
-	: NetMessage(eMESSAGE_TYPE_CHAT)
+	: NetMessage(eNETMESSAGE_CHAT)
 {
 	mySize = 
 		static_cast<MessageType_t>(sizeof(NetMessage)) + 

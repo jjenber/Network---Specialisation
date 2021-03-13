@@ -11,11 +11,11 @@ namespace Network
 
 	enum eMessage : MessageType_t
 	{
-		eMESSAGE_TYPE_NONE = 0,
-		eMESSAGE_TYPE_CHAT,
-		eMESSAGE_TYPE_NON_GUARANTEED_COUNT,
+		eNETMESSAGE_NONE = 0,
+		eNETMESSAGE_CHAT,
+		eNETMESSAGE_NON_GUARANTEED_COUNT,
 
-		eMESSAGE_TYPE_HANDSHAKE_G,
+		eNETMESSAGE_HANDSHAKE_G,
 	};
 
 #pragma pack(1)
@@ -27,7 +27,7 @@ namespace Network
 		NetMessage(const eMessage aMessageType)
 			: myConnectionID(0), myMessageType(aMessageType), mySize(0) {}
 
-		NetMessage() : NetMessage(eMESSAGE_TYPE_NONE) {}
+		NetMessage() : NetMessage(eNETMESSAGE_NONE) {}
 		virtual ~NetMessage() {}
 
 		constexpr eMessage GetMessageType() const { return myMessageType; }
@@ -41,7 +41,7 @@ namespace Network
 	class NetMessageGuaranteed : public NetMessage
 	{
 	public:
-
+	private:
 	};
 
 	class ChatMessage : public NetMessage

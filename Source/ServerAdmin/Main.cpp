@@ -14,29 +14,16 @@
 #include <imgui_impl_win32.h>
 #include <imgui_impl_dx11.h>
 
-static ImFont* ImGui_LoadFont(ImFontAtlas& atlas, const char* name, float size, const ImVec2& displayOffset = ImVec2(0, 0))
+ImFont* ImGui_LoadFont(ImFontAtlas& atlas, const char* name, float size, const ImVec2& displayOffset = ImVec2(0, 0))
 {
     char* windir = nullptr;
     if (_dupenv_s(&windir, nullptr, "WINDIR") || windir == nullptr)
         return nullptr;
 
-    static const ImWchar ranges[] =
-    {
-        0x0020, 0x00FF, // Basic Latin + Latin Supplement
-        0x0104, 0x017C, // Polish characters and more
-        0,
-    };
-
-    ImFontConfig config;
-    config.OversampleH = 4;
-    config.OversampleV = 4;
-    config.PixelSnapH = false;
-
     auto path = std::string(windir) + "\\Fonts\\" + name;
-    auto font = atlas.AddFontFromFileTTF(path.c_str(), size, &config, ranges);
+    auto font = atlas.AddFontFromFileTTF(path.c_str(), size);
 
     free(windir);
-
     return font;
 }
 ImFontAtlas fontAtlas;
