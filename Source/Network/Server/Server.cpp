@@ -28,7 +28,7 @@ void Network::Server::ReceiveIncomingMessages()
 
 	while (myUDPSocket.Receive(recvBuf, Constants::MAX_BUFFER_SIZE, addr, length))
 	{
-		myReceivedMessages.EnqueueFromBuffer(recvBuf, length);
+		myReceivedMessages.EnqueueReceived(recvBuf);
 	}
 
 	while (!myReceivedMessages.Empty())
@@ -58,7 +58,7 @@ void Network::Server::DecodeReliable(MessageID_t aNetMessageID)
 		{
 			ReliableNetMessage msg;
 			myReceivedMessages.Dequeue(msg);
-			std::cout << "Received: " << msg.GetMessageType() << std::endl;
+			std::cout << "Received: " << msg.GetMessageID() << std::endl;
 			break;
 		}
 	default:

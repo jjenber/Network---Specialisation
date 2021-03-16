@@ -5,8 +5,8 @@
 Network::ChatMessage::ChatMessage(const std::string& aMessage)
 	: NetMessage(eNETMESSAGE_CHAT)
 {
-	myBodySize = 
-		static_cast<MessageID_t>(sizeof(NetMessage)) + 
+	mySize = 
+		static_cast<MessageID_t>(NetMessage::Size()) +
 		static_cast<MessageID_t>(sizeof(Constants::MAX_CHAT_LENGTH)) + 
 		sizeof(myLength);
 

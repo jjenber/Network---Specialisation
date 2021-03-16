@@ -25,18 +25,20 @@ namespace Network
 		template<size_t> friend class NetMessageQueue;
 	
 	public:
+		static constexpr int Size() { return sizeof(NetMessage) - sizeof(void*); }
+
 		NetMessage(const eNetMessageID aMessageType)
-			: myConnectionID(0), myMessageType(aMessageType), myBodySize(0) {}
+			: myConnectionID(0), myMessageID(aMessageType), mySize(NetMessage::Size()) {}
 
 		NetMessage() : NetMessage(eNETMESSAGE_NONE) {}
 		virtual ~NetMessage() {}
 
-		constexpr eNetMessageID GetMessageType() const { return myMessageType; }
+		constexpr eNetMessageID GetMessageID() const { return myMessageID; }
 	
 	protected:
-		eNetMessageID myMessageType;
+		eNetMessageID myMessageID;
 		unsigned short myConnectionID;
-		HeaderSize_t   myBodySize;
+		HeaderSize_t   mySize;
 	};
 
 	class ReliableNetMessage : public NetMessage
@@ -44,8 +46,11 @@ namespace Network
 		template<size_t> friend class ReliableNetMessageQueue;
 
 	public:
-		using NetMessage::NetMessage;
-		ReliableNetMessage() : myAckID(USHRT_MAX) { myBodySize = static_cast<HeaderSize_t>(sizeof(ReliableNetMessage)) - static_cast<HeaderSize_t>(sizeof(NetMessage)); }
+		ReliableNetMessage(const eNetMessageID aMessageType = eNETMESSAGE_NONE) : NetMessage(aMessageType), myAckID(USHRT_MAX)
+		{ 
+			mySize = static_cast<HeaderSize_t>(sizeof(ReliableNetMessage) - sizeof(void*)); 
+		}
+	
 	private:
 		unsigned short myAckID;
 	};

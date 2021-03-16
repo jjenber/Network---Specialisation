@@ -59,29 +59,31 @@ namespace Network
 		auto now = std::chrono::steady_clock::now();
 		for (int i = 0; i < myQueueItems.size(); i++)
 		{
-			auto& item = myQueueItems[i];
+			ReliableMessageQueueItem& item = myQueueItems[i];
 			if (item.myResendAttempts > Constants::MAX_RESEND_ATTEMPTS)
 			{
 				timedOutMessageIndices.push_back(i);
 				continue;
 			}
 
-			float timeSinceLastSend = std::chrono::duration_cast<std::chrono::milliseconds>(now - item.myTimestamp).count();
+			auto timeSinceLastSend = std::chrono::duration_cast<std::chrono::milliseconds>(now - item.myTimestamp).count();
 			if (timeSinceLastSend >= Constants::RESEND_WAIT_TIME_MS)
 			{
 				item.myTimestamp = now;
 				item.myResendAttempts++;
-				memcpy(sendBuffer, *item.myMessage, sizeitem.myMessage->myBodySize);
-				aSocket.Send(sendBuffer, item.myMessage->myBodySize, item.myDestinationAddress);
+				// Copy over the message and offset for the count.
+				memcpy(sendBuffer + 1, &item.myMessage->myMessageID, item.myMessage->mySize);
+				aSocket.Send(sendBuffer, item.myMessage->mySize, item.myDestinationAddress);
 				std::cout << "Sending reliable message." << std::endl;
 			}
 		}
 
 		// Remove the timed out messages from the item queue.
-		for (int i = timedOutMessageIndices.size() - 1; i >= 0; i--)
+		for (int i = static_cast<int>(timedOutMessageIndices.size()) - 1; i >= 0; i--)
 		{
 			int indexToRemove = timedOutMessageIndices[i];
 			delete myQueueItems[indexToRemove].myMessage;
+
 			myQueueItems[indexToRemove] = myQueueItems.back();
 			myQueueItems.pop_back();
 			std::cout << "Message timed out" << std::endl;

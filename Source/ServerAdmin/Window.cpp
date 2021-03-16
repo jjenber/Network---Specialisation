@@ -52,7 +52,6 @@ LRESULT Window::WinProc(_In_ HWND hwnd, _In_ UINT uMsg, _In_ WPARAM wParam, _In_
 	{
 	case WM_EXITSIZEMOVE:
 	{
-		
 		PostMessageA(hwnd, USER_EVENT_RESIZE, 0, 0);
 		break;
 	}
