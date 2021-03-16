@@ -7,8 +7,9 @@ namespace Network
 	public:
 		Address() = default;
 		Address(const std::string& aAddress, unsigned short aPort);
+		Address(unsigned short aPort);
 	private:
-		sockaddr_in mySockAddr;
+		sockaddr_in mySockAddr = { 0 };
 	};
 }
 

@@ -13,12 +13,18 @@ namespace Network
 	class NetMessageQueue
 	{
 	public:
+		NetMessageQueue() = default;
+		NetMessageQueue(const NetMessageQueue& aCopy);
+		NetMessageQueue& operator=(const NetMessageQueue& aCopy);
+
 		void Enqueue(const NetMessage& aMessage);
 		void EnqueueFromBuffer(char aDataBuffer[Constants::MAX_BUFFER_SIZE], int aBufferLength);
 
 		/// Returns the type of the next message without modifying the queue.
-		eMessage Peek() const;
-		const unsigned short PeekGuaranteeID() const;
+		eNetMessageID Peek() const;
+		const unsigned short PeekReliableAckID() const;
+
+		void* Front() const;
 
 		/// Fills the provided message with data from the queue and "removes" it from the queue. The caller allocates memory for the message by checking type using Peek().
 		void Dequeue(NetMessage& aMessageOut);
@@ -28,7 +34,7 @@ namespace Network
 
 		size_t GetLength() const { return myBack; }
 
-		bool IsEmpty() const { return myFront == myBack; }
+		bool Empty() const { return myFront == myBack; }
 		void Clear() { myFront = 0; myBack = 0; }
 
 		// Fills up the send buffer with messages until queue is empty or MAX_BUFFER_SIZE is reached. Returns false if no messages are queued.
@@ -44,36 +50,60 @@ namespace Network
 	};
 
 	template<size_t _SIZE>
+	inline NetMessageQueue<_SIZE>::NetMessageQueue(const NetMessageQueue& aCopy)
+	{
+		myBack = aCopy.myBack;
+		myFront = aCopy.myFront;
+		memcpy(&myDataBuffer[0], aCopy.myDataBuffer.data(), myBack);
+	}
+
+	template<size_t _SIZE>
+	inline NetMessageQueue<_SIZE>& NetMessageQueue<_SIZE>::operator=(const NetMessageQueue<_SIZE>& aCopy)
+	{
+		myBack = aCopy.myBack;
+		myFront = aCopy.myFront;
+		memcpy(&myDataBuffer[0], aCopy.myDataBuffer.data(), myBack);
+		return *this;
+	}
+
+	template<size_t _SIZE>
 	inline void NetMessageQueue<_SIZE>::Enqueue(const NetMessage& aMessage)
 	{
-		size_t totalMessageSize = aMessage.mySize;
+		size_t totalMessageSize = aMessage.myBodySize;
 		assert(myBack + totalMessageSize < _SIZE && "ERROR: No room for the message!");
 
 		// Copying header data and move length
 		memcpy(myDataBuffer.data() + myBack, &aMessage.myMessageType, totalMessageSize);
-		myBack += aMessage.mySize;
+		myBack += aMessage.myBodySize;
 	}
 
 	template<size_t _SIZE>
-	inline eMessage NetMessageQueue<_SIZE>::Peek() const
+	inline eNetMessageID NetMessageQueue<_SIZE>::Peek() const
 	{
-		eMessage type = eMessage::eMESSAGE_TYPE_NONE;
-		if (!IsEmpty())
+		eNetMessageID type = eNetMessageID::eNETMESSAGE_NONE;
+		if (!Empty())
 		{
-			memcpy(&type, myDataBuffer.data() + myFront, sizeof(eMessage));
+			memcpy(&type, myDataBuffer.data() + myFront, sizeof(eNetMessageID));
 		}
 		return type;
 	}
 
 	template<size_t _SIZE>
-	inline const unsigned short NetMessageQueue<_SIZE>::PeekGuaranteeID() const
+	inline const unsigned short NetMessageQueue<_SIZE>::PeekReliableAckID() const
 	{
 		unsigned short ID = -1;
-		if (!IsEmpty())
+		if (!Empty())
 		{
 			memcpy(&ID, myDataBuffer.data() + myFront + sizeof(NetMessage), sizeof(unsigned short));
 		}
 		return ID;
+	}
+
+	template<size_t _SIZE>
+	inline void* NetMessageQueue<_SIZE>::Front() const
+	{
+		assert(Empty() == false && "Queue is empty.");
+		return (void*)myDataBuffer[myFront];
 	}
 
 	template<size_t _SIZE>
@@ -83,7 +113,7 @@ namespace Network
 		memcpy(&aMessageOut.myMessageType, myDataBuffer.data() + myFront, sizeof(NetMessage));
 		myFront += sizeof(NetMessage);
 		
-		int msgBodySize = aMessageOut.mySize - sizeof(NetMessage);
+		int msgBodySize = aMessageOut.myBodySize - sizeof(NetMessage);
 
 		// Copy potential body trailing the header.
 		if (msgBodySize > 0)
@@ -98,16 +128,16 @@ namespace Network
 	inline void NetMessageQueue<_SIZE>::Dequeue(char aBufferOut[Constants::MAX_BUFFER_SIZE], size_t& aOutLen)
 	{
 		// Message count
-		aBufferOut[0] = MessageType_t(1);
+		aBufferOut[0] = MessageID_t(1);
 
 		// Copy the header.
 		NetMessage header;
 		memcpy(&header, myDataBuffer.data() + myFront, sizeof(NetMessage));
-		memcpy(aBufferOut + MessageType_t(1), myDataBuffer.data() + myFront, header.mySize);
+		memcpy(aBufferOut + MessageID_t(1), myDataBuffer.data() + myFront, header.myBodySize);
 		
 		// Move the queue.
-		myFront += header.mySize;
-		aOutLen  = header.mySize + MessageType_t(1);
+		myFront += header.myBodySize;
+		aOutLen  = header.myBodySize + MessageID_t(1);
 	}
 
 	template<size_t _SIZE>
@@ -119,19 +149,19 @@ namespace Network
 
 		int messageCount = 0;
 		NetMessage header;
-		while (!IsEmpty( ) && bufferLen < Constants::MAX_BUFFER_SIZE)
+		while (!Empty() && bufferLen < Constants::MAX_BUFFER_SIZE)
 		{
 			memcpy(&header, myDataBuffer.data() + myFront, sizeof(NetMessage));
-			if (header.mySize + bufferLen > Constants::MAX_BUFFER_SIZE)
+			if (header.myBodySize + bufferLen > Constants::MAX_BUFFER_SIZE)
 			{
 				// Not enough room in the buffer for the next message.
 				break;
 			}
 
 			// Copy the message from the queue to the char buffer
-			memcpy(aBufferOut + bufferLen, myDataBuffer.data( ) + myFront, header.mySize);
-			myFront   += header.mySize;
-			bufferLen += header.mySize;
+			memcpy(aBufferOut + bufferLen, myDataBuffer.data( ) + myFront, header.myBodySize);
+			myFront   += header.myBodySize;
+			bufferLen += header.myBodySize;
 			messageCount += 1;
 		}
 
@@ -143,9 +173,8 @@ namespace Network
 	template<size_t _SIZE>
 	inline void NetMessageQueue<_SIZE>::EnqueueFromBuffer(char aDataBuffer[Constants::MAX_BUFFER_SIZE], int aBufferLength)
 	{
-		// The first byte denoting the message count is skipped;
-		myBack += aBufferLength - 1;
-		assert(myBack < aBufferLength && "Buffer overflow. No room for databuffer.");
-		memcpy(myDataBuffer.data() + myBack, aDataBuffer + 1, aBufferLength - 1);
+		myBack += static_cast<size_t>(aBufferLength) - 1;
+		assert(myBack < _SIZE && "Buffer overflow. No room for databuffer.");
+		memcpy(myDataBuffer.data() + myBack + 1, aDataBuffer + 1, aBufferLength - 1);
 	}
 }

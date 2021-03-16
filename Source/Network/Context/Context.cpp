@@ -10,7 +10,7 @@ namespace Network
 		int result = WSAStartup(MAKEWORD(2, 2), &wsaData);
 		if (result != NO_ERROR)
 		{
-			std::cout << "WSAStartup failed with error: " << result << std::endl;
+			std::cout << "WSAStartup failed with error: " << WSAGetLastError() << std::endl;
 		}
 	}
 	

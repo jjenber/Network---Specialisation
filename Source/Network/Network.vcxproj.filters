@@ -10,9 +10,6 @@
     <Filter Include="Address">
       <UniqueIdentifier>{c8180423-3947-4f95-b837-9207857bdf55}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Client">
-      <UniqueIdentifier>{63c4a564-1bac-415e-ac74-5dc4878807ed}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Context">
       <UniqueIdentifier>{c5369340-eff4-44d7-a3e1-53499385db65}</UniqueIdentifier>
     </Filter>
@@ -38,9 +35,6 @@
     <ClInclude Include="Address\Address.h">
       <Filter>Address</Filter>
     </ClInclude>
-    <ClInclude Include="Client\Client.h">
-      <Filter>Client</Filter>
-    </ClInclude>
     <ClInclude Include="Context\Context.h">
       <Filter>Context</Filter>
     </ClInclude>
@@ -48,6 +42,8 @@
       <Filter>Server</Filter>
     </ClInclude>
     <ClInclude Include="NetMessage.h" />
+    <ClInclude Include="Common.h" />
+    <ClInclude Include="ReliableNetMessageQueue.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -61,9 +57,6 @@
     </ClCompile>
     <ClCompile Include="Address\Address.cpp">
       <Filter>Address</Filter>
-    </ClCompile>
-    <ClCompile Include="Client\Client.cpp">
-      <Filter>Client</Filter>
     </ClCompile>
     <ClCompile Include="Context\Context.cpp">
       <Filter>Context</Filter>

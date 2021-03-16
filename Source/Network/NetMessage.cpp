@@ -5,9 +5,9 @@
 Network::ChatMessage::ChatMessage(const std::string& aMessage)
 	: NetMessage(eNETMESSAGE_CHAT)
 {
-	mySize = 
-		static_cast<MessageType_t>(sizeof(NetMessage)) + 
-		static_cast<MessageType_t>(sizeof(Constants::MAX_CHAT_LENGTH)) + 
+	myBodySize = 
+		static_cast<MessageID_t>(sizeof(NetMessage)) + 
+		static_cast<MessageID_t>(sizeof(Constants::MAX_CHAT_LENGTH)) + 
 		sizeof(myLength);
 
 	SetText(aMessage);

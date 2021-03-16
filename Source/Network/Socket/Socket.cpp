@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "Socket.h"
 #include "Address/Address.h"
+#include <iostream>
 
 void Network::Socket::SetBlocking(bool aBlock)
 {
@@ -21,15 +22,11 @@ void Network::Socket::Bind(const Address& aAddress)
 
 void Network::Socket::BindToLocal()
 {
-	sockaddr_in hint;
-	ZeroMemory(&hint, sizeof(SOCKADDR_IN));
-	hint.sin_family = AF_INET;
-	hint.sin_addr.S_un.S_addr = ADDR_ANY;
-	hint.sin_port = htons(ADDR_ANY);
-
-	if (bind(mySocket, (sockaddr*)&hint, sizeof(hint)) == SOCKET_ERROR)
+	Address addr = Address(Constants::DEFAULT_PORT);
+	if (bind(mySocket, (sockaddr*)&addr, sizeof(addr)) == SOCKET_ERROR)
 	{
 		// TODO: Error
+		std::cout << "Error binding to local." << std::endl;
 	}
 }
 
