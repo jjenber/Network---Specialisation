@@ -101,6 +101,7 @@
     <ClInclude Include="Server\Server.h" />
     <ClInclude Include="Socket\Socket.h" />
     <ClInclude Include="Socket\UDPSocket.h" />
+    <ClInclude Include="Timer\Timer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Address\Address.cpp" />
@@ -113,6 +114,7 @@
     <ClCompile Include="Server\Server.cpp" />
     <ClCompile Include="Socket\Socket.cpp" />
     <ClCompile Include="Socket\UDPSocket.cpp" />
+    <ClCompile Include="Timer\Timer.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

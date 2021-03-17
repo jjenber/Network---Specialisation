@@ -1,5 +1,15 @@
 #include "Common.h"
-#include "ReliableNetMessageQueue.hpp"
+#include "NetMessageQueue.hpp"
+
+enum eConnectionStatus
+{
+	NotConnected,
+	Connecting,
+	Connected,
+	ConnectionFailed,
+	ConnectionRejected,
+};
+
 namespace Network
 {
 	class Client
@@ -9,8 +19,15 @@ namespace Network
 		void Update();
 		void ConnectToServer();
 	private:
+		void RecieveIncomingMessages();
+		void Decode(MessageID_t aMessageID);
+		void DecodeReliable(MessageID_t aMessageID);
+
 		UDPSocket myUDPSocket;
 		Address myMainServerAddress;
-		ReliableNetMessageQueue<1024> myReliableMessageQueue;
+		NetMessageQueue<1024> myReceivedMessages;
+		std::atomic<eConnectionStatus> myConnectionStatus = eConnectionStatus::NotConnected;
+		
+		int myClientSlot = INT_MAX;
 	};
 }

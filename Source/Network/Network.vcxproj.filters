@@ -16,6 +16,9 @@
     <Filter Include="Server">
       <UniqueIdentifier>{cbf8b97c-295a-461c-b52a-9a1623dae30d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Timer">
+      <UniqueIdentifier>{1aa8cc70-a0ae-41dc-8c04-e3459bbae916}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -44,6 +47,9 @@
     <ClInclude Include="NetMessage.h" />
     <ClInclude Include="Common.h" />
     <ClInclude Include="ReliableNetMessageQueue.hpp" />
+    <ClInclude Include="Timer\Timer.h">
+      <Filter>Timer</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -65,5 +71,8 @@
       <Filter>Server</Filter>
     </ClCompile>
     <ClCompile Include="NetMessage.cpp" />
+    <ClCompile Include="Timer\Timer.cpp">
+      <Filter>Timer</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

@@ -24,8 +24,6 @@ namespace Network
 		eNetMessageID Peek() const;
 		const unsigned short PeekReliableAckID() const;
 
-		void* Front() const;
-
 		/// Fills the provided message with data from the queue and "removes" it from the queue. The caller allocates memory for the message by checking type using Peek().
 		void Dequeue(NetMessage& aMessageOut);
 
@@ -99,13 +97,6 @@ namespace Network
 	}
 
 	template<size_t _SIZE>
-	inline void* NetMessageQueue<_SIZE>::Front() const
-	{
-		assert(Empty() == false && "Queue is empty.");
-		return (void*)myDataBuffer[myFront];
-	}
-
-	template<size_t _SIZE>
 	inline void NetMessageQueue<_SIZE>::Dequeue(NetMessage& aMessageOut)
 	{
 		// Copy the header from the front of the queue.
@@ -117,7 +108,7 @@ namespace Network
 		// Copy potential body trailing the header.
 		if (msgBodySize > 0)
 		{
-			memcpy(&aMessageOut + NetMessage::Size(), myDataBuffer.data() + myFront, msgBodySize);
+			memcpy(&aMessageOut.myMessageID + NetMessage::Size(), myDataBuffer.data() + myFront, msgBodySize);
 		}
 
 		myFront += msgBodySize;
@@ -177,11 +168,14 @@ namespace Network
 		NetMessage header;
 		for (int i = 0; i < messageCount; i++)
 		{
-			memcpy(&header, aDataBuffer + readPos, NetMessage::Size());
+			// Copy from the buffer to a header to get size.
+			memcpy(&header.myMessageID, aDataBuffer + readPos, NetMessage::Size());
 			
 			assert(myBack + header.mySize < _SIZE && "Buffer overflow. No room for databuffer.");
 
-			myBack += header.mySize;
+			// Enqueue 
+			memcpy(myDataBuffer.data() + myBack, aDataBuffer + readPos, header.mySize);
+			myBack  += header.mySize;
 			readPos += header.mySize;
 		}
 	}

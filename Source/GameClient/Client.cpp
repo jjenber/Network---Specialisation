@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "Client.h"
 #include "NetMessage.h"
+#include "Timer\Timer.h"
 #include <iostream>
 #include <chrono>
 
@@ -12,11 +13,71 @@ void Network::Client::Init()
 
 void Network::Client::Update()
 {
-	myReliableMessageQueue.Send(myUDPSocket);
 }
 
 void Network::Client::ConnectToServer()
 {
 	ReliableNetMessage msg(eNETMESSAGE_HANDSHAKE);
-	myReliableMessageQueue.Enqueue(msg, myMainServerAddress);
+	
+	myConnectionStatus = eConnectionStatus::Connecting;
+	myUDPSocket.Send(msg, myMainServerAddress);
+
+	Timer timer;
+	while (myConnectionStatus == eConnectionStatus::Connecting)
+	{
+		timer.Update();
+		if (timer.GetTotalTime() > 5.f)
+		{
+			myUDPSocket.Send(msg, myMainServerAddress);
+			timer.Reset();
+		}
+
+		RecieveIncomingMessages();
+	}
+}
+
+void Network::Client::RecieveIncomingMessages()
+{
+	Address addr;
+	char recvBuf[Constants::MAX_BUFFER_SIZE];
+	int length;
+
+	while (myUDPSocket.Receive(recvBuf, Constants::MAX_BUFFER_SIZE, addr, length))
+	{
+		myReceivedMessages.EnqueueReceived(recvBuf);
+	}
+
+	while (!myReceivedMessages.Empty())
+	{
+		MessageID_t msgID = myReceivedMessages.Peek();
+		if (msgID > eNetMessageID::eNETMESSAGE_RELIABLE_ID)
+		{
+			DecodeReliable(msgID);
+		}
+		else if (msgID > eNETMESSAGE_NONE)
+		{
+			Decode(msgID);
+		}
+	}
+}
+
+void Network::Client::Decode(MessageID_t aMessageID)
+{
+	switch (aMessageID)
+	{
+	case eNETMESSAGE_HANDSHAKE:
+	{
+		HandshakeMessage message;
+		myReceivedMessages.Dequeue(message);
+		myClientSlot = message.myConnectionID;
+		myConnectionStatus = eConnectionStatus::Connected;
+		break;
+	}
+	default:
+		break;
+	}
+}
+
+void Network::Client::DecodeReliable(MessageID_t aMessageID)
+{
 }

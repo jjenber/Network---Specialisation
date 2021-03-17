@@ -38,7 +38,7 @@ void Network::Server::ReceiveIncomingMessages()
 		{
 			DecodeReliable(msgID);
 		}
-		else
+		else if (msgID > eNETMESSAGE_NONE)
 		{
 			Decode(msgID);
 		}
@@ -47,21 +47,21 @@ void Network::Server::ReceiveIncomingMessages()
 
 void Network::Server::Decode(MessageID_t aNetMessageID)
 {
-	
-}
-
-void Network::Server::DecodeReliable(MessageID_t aNetMessageID)
-{
 	switch (aNetMessageID)
 	{
 		case eNETMESSAGE_HANDSHAKE:
 		{
 			ReliableNetMessage msg;
 			myReceivedMessages.Dequeue(msg);
-			std::cout << "Received: " << msg.GetMessageID() << std::endl;
+			
 			break;
 		}
 	default:
 		break;
 	}
+}
+
+void Network::Server::DecodeReliable(MessageID_t aNetMessageID)
+{
+
 }
