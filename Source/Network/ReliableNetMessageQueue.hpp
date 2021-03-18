@@ -8,13 +8,13 @@
 
 namespace Network
 {
-	template <size_t _SIZE>
 	class ReliableNetMessageQueue
 	{
 	public:
 		template<class T>
 		void Enqueue(T& aMessage, Address aDestinationAddress, int aResendAttempts, float aResendWaitTime);
 		void Send(UDPSocket& aSocket);
+		void RemoveMessage(unsigned int aSequence);
 		void Clear();
 	private:
 		
@@ -25,7 +25,7 @@ namespace Network
 				: myResendAttempts(aResendAttempts), myResendTimer(aResendWaitTime), myResendWaitTime(aResendWaitTime) {};
 
 			std::chrono::steady_clock::time_point myTimestamp;
-			ReliableNetMessage* myMessage = nullptr;
+			std::shared_ptr<ReliableNetMessage> myMessage;
 			Address myDestinationAddress;
 			
 			float myResendTimer;
@@ -37,14 +37,12 @@ namespace Network
 		unsigned short mySequenceNr = 0;
 	};
 
-	template<size_t _SIZE>
-	template<class T>
-	inline void ReliableNetMessageQueue<_SIZE>::Enqueue(T& aMessage, Address aDestinationAddress, int aResendAttempts, float aResendWaitTime)
+	void ReliableNetMessageQueue::Enqueue(T& aMessage, Address aDestinationAddress, int aResendAttempts, float aResendWaitTime)
 	{
 		static_assert(std::is_base_of_v<ReliableNetMessage, T>, "T must derive from ReliableNetMessage");
 
 		ReliableMessageQueueItem item(aResendAttempts, aResendWaitTime);
-		item.myMessage               = reinterpret_cast<ReliableNetMessage*>(new T(aMessage));
+		item.myMessage               = std::make_shared<T>(aMessage);
 		item.myMessage->mySize       = sizeof(T) - sizeof(void*);
 		item.myMessage->mySequenceNr = mySequenceNr++;
 		item.myDestinationAddress    = aDestinationAddress;
@@ -52,11 +50,10 @@ namespace Network
 		myQueueItems.push_back(item);
 	}
 
-	template<size_t _SIZE>
-	inline void ReliableNetMessageQueue<_SIZE>::Send(UDPSocket& aSocket)
+	void ReliableNetMessageQueue::Send(UDPSocket& aSocket)
 	{
 		using namespace std::literals;
-		char sendBuffer[Constants::MAX_BUFFER_SIZE];
+		char sendBuffer[Constants::MAX_BUFFER_SIZE]{};
 		// Message count
 		sendBuffer[0] = 1;
 
@@ -98,13 +95,8 @@ namespace Network
 		}
 	}
 
-	template<size_t _SIZE>
-	inline void ReliableNetMessageQueue<_SIZE>::Clear()
+	inline void ReliableNetMessageQueue::Clear()
 	{
-		for (auto& item : myQueueItems)
-		{
-			delete item.myMessage;
-		}
 		myQueueItems.clear();
 	}
 }

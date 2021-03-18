@@ -3,15 +3,25 @@
 
 namespace Network
 {
+	using ipaddress_t = IPADDRESS_TYPE;
 	class Address
 	{
 	public:
+		enum class eType : ipaddress_t
+		{
+			Undefined,
+			Ipv4,
+		};
+
 		Address() = default;
 		Address(const std::string& aAddress, unsigned short aPort);
+		
 		bool operator==(const Address& aAddress) const;
 
 		void SetFromSockAddr(const sockaddr_in& aSockAddr);
 		void SetIPFromString(const std::string& aString);
+
+		void Clear();
 		
 		void ToSockAddr(sockaddr_in& aSockAddr) const;
 
@@ -26,6 +36,7 @@ namespace Network
 			uint8_t myIPBytes[4];
 		};
 		u_short myPort;
+		eType   myType;
 	};
 
 }

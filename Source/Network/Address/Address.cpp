@@ -10,7 +10,7 @@ Network::Address::Address(const std::string& aAddress, unsigned short aPort) : m
 
 bool Network::Address::operator==(const Address& aAddress) const
 {
-	return false;
+	return myIP == aAddress.myIP && myPort == aAddress.myPort;
 }
 
 void Network::Address::SetFromSockAddr(const sockaddr_in& aSockAddr)
@@ -37,6 +37,15 @@ void Network::Address::SetIPFromString(const std::string& aString)
 	myIPBytes[1] = a1;
 	myIPBytes[2] = a2;
 	myIPBytes[3] = a3;
+
+	myType = Address::eType::Ipv4;
+}
+
+void Network::Address::Clear()
+{
+	myIP = 0;
+	myPort = 0;
+	myType = eType::Undefined;
 }
 
 std::string Network::Address::ToString() const

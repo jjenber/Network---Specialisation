@@ -22,7 +22,7 @@ namespace Network
 
 		/// Returns the type of the next message without modifying the queue.
 		eNetMessageID Peek() const;
-		const unsigned short PeekReliableAckID() const;
+		const unsigned short PeekReliableSequence() const;
 
 		/// Fills the provided message with data from the queue and "removes" it from the queue. The caller allocates memory for the message by checking type using Peek().
 		void Dequeue(NetMessage& aMessageOut);
@@ -86,7 +86,7 @@ namespace Network
 	}
 
 	template<size_t _SIZE>
-	inline const unsigned short NetMessageQueue<_SIZE>::PeekReliableAckID() const
+	inline const unsigned short NetMessageQueue<_SIZE>::PeekReliableSequence() const
 	{
 		unsigned short ID = -1;
 		if (!Empty())
@@ -127,7 +127,7 @@ namespace Network
 		
 		// Move the queue.
 		myFront += header.mySize;
-		aOutLen  = header.mySize + MessageID_t(1);
+		aOutLen  = static_cast<size_t>(header.mySize) + MessageID_t(1);
 	}
 
 	template<size_t _SIZE>

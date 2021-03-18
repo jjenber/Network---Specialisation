@@ -9,7 +9,7 @@ namespace Network
 		UDPSocket();
 		int Send(const char* aDataBuf, int aBufLen, const Address& aAddress);
 		int Send(const NetMessage& aMessage, const Address& aAddress);
-		bool Receive(const char* aDataBuf, int aBufLen, Address& aAddress, int& aReceivedLength);
+		bool Receive(const char* aDataBuf, Address& aAddress);
 	};
 }
 

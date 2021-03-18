@@ -5,6 +5,7 @@
 
 #define NET_MSG_TYPE unsigned char
 #define NET_MSG_HEADER_SIZE_TYPE unsigned short
+#define IPADDRESS_TYPE unsigned short
 
 namespace Network
 {

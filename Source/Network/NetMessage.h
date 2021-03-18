@@ -27,7 +27,7 @@ namespace Network
 		static constexpr int Size() { return sizeof(NetMessage) - sizeof(void*); }
 
 		NetMessage(const eNetMessageID aMessageType)
-			: myConnectionID(0), myMessageID(aMessageType), mySize(NetMessage::Size()) {}
+			: myMessageID(aMessageType), mySize(NetMessage::Size()) {}
 
 		NetMessage() : NetMessage(eNETMESSAGE_NONE) {}
 		virtual ~NetMessage() {}
@@ -36,7 +36,6 @@ namespace Network
 	
 	public:
 		eNetMessageID myMessageID;
-		unsigned short myConnectionID;
 		HeaderSize_t   mySize;
 	};
 
@@ -49,17 +48,17 @@ namespace Network
 		{ 
 			mySize = static_cast<HeaderSize_t>(sizeof(ReliableNetMessage) - sizeof(void*)); 
 		}
-	
+		unsigned short GetSequence() const { return mySequenceNr; }
 	private:
 		unsigned short mySequenceNr;
 	};
 
-	class HandshakeMessage : public ReliableNetMessage
+	class HandshakeMessage : public NetMessage
 	{
 	public:
 		HandshakeMessage(int aClientSlot = UCHAR_MAX) 
-			: ReliableNetMessage(eNETMESSAGE_HANDSHAKE) {}
-	private:
+			: NetMessage(eNETMESSAGE_HANDSHAKE) {}
+
 		unsigned char myClientSlot = UCHAR_MAX;
 	};
 

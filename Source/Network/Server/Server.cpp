@@ -4,6 +4,7 @@
 
 void Network::Server::Startup()
 {
+	myConnectedClientsCount = 0;
 	myUDPSocket.BindToLocal();
 	myUDPSocket.SetBlocking(false);
 }
@@ -12,7 +13,7 @@ int Network::Server::GetNextFreeConnectionSlot()
 {
 	for (int i = 0; i < Constants::MAX_CLIENT_COUNT; i++)
 	{
-		if (!myUDPConnections[i].myConnected)
+		if (!myConnectedClients[i])
 		{
 			return i;
 		}
@@ -20,36 +21,32 @@ int Network::Server::GetNextFreeConnectionSlot()
 	return -1;
 }
 
+int Network::Server::FindConnectedClientSlot(const Address& aAddress)
+{
+	for (int i = 0; i < Constants::MAX_CLIENT_COUNT; i++)
+	{
+		if (myConnectedClients[i] && myClientAddresses[i] == aAddress)
+		{
+			return i;
+		}
+	}
+	return NoClientFound;
+}
+
 void Network::Server::ReceiveIncomingMessages()
 {
-	Address addr;
-	char recvBuf[Constants::MAX_BUFFER_SIZE];
-	int length;
+	Address fromAddress;
+	char recvBuf[Constants::MAX_BUFFER_SIZE]{};
 
-	while (myUDPSocket.Receive(recvBuf, Constants::MAX_BUFFER_SIZE, addr, length))
+	while (myUDPSocket.Receive(recvBuf, fromAddress))
 	{
 		myReceivedMessages.EnqueueReceived(recvBuf);
-		auto d = mds.find(addr);
-		if (d == mds.end())
-		{
-			mds.emplace(addr, UDPConnection());
-			std::cout << "New connection: " << addr.ToString() << std::endl;
-		}
-		else
-			std::cout << "Existeing: " <<addr.ToString() << std::endl;
+		CheckNewConnection(myReceivedMessages.Peek(), fromAddress);
 	}
 
 	while (!myReceivedMessages.Empty())
 	{
-		MessageID_t msgID = myReceivedMessages.Peek();
-		if (msgID > eNetMessageID::eNETMESSAGE_RELIABLE_ID)
-		{
-			DecodeReliable(msgID);
-		}
-		else if (msgID > eNETMESSAGE_NONE)
-		{
-			Decode(msgID);
-		}
+		Decode(myReceivedMessages.Peek());
 	}
 }
 
@@ -65,11 +62,23 @@ void Network::Server::Decode(MessageID_t aNetMessageID)
 			break;
 		}
 	default:
+
 		break;
 	}
 }
 
-void Network::Server::DecodeReliable(MessageID_t aNetMessageID)
+void Network::Server::CheckNewConnection(MessageID_t aMessageID, const Address& aAddress)
 {
-
+	switch (aMessageID)
+	{
+	case eNETMESSAGE_HANDSHAKE:
+	{
+		ReliableNetMessage msg;
+		myReceivedMessages.Dequeue(msg);
+		msg.GetSequence();
+		break;
+	}
+	default:
+		break;
+	}
 }

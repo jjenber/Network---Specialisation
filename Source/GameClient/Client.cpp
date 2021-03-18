@@ -39,10 +39,9 @@ void Network::Client::ConnectToServer()
 void Network::Client::RecieveIncomingMessages()
 {
 	Address addr;
-	char recvBuf[Constants::MAX_BUFFER_SIZE];
-	int length;
+	char recvBuf[Constants::MAX_BUFFER_SIZE]{};
 
-	while (myUDPSocket.Receive(recvBuf, Constants::MAX_BUFFER_SIZE, addr, length))
+	while (myUDPSocket.Receive(recvBuf, addr))
 	{
 		myReceivedMessages.EnqueueReceived(recvBuf);
 	}
@@ -69,7 +68,7 @@ void Network::Client::Decode(MessageID_t aMessageID)
 	{
 		HandshakeMessage message;
 		myReceivedMessages.Dequeue(message);
-		myClientSlot = message.myConnectionID;
+		myClientSlot = message.myClientSlot;
 		myConnectionStatus = eConnectionStatus::Connected;
 		break;
 	}
