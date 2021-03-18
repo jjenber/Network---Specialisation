@@ -45,13 +45,13 @@ namespace Network
 		template<size_t> friend class ReliableNetMessageQueue;
 	public:
 		ReliableNetMessage(const eNetMessageID aMessageType = eNETMESSAGE_NONE) 
-			: NetMessage(aMessageType), myAckID(USHRT_MAX)
+			: NetMessage(aMessageType), mySequenceNr(USHRT_MAX)
 		{ 
 			mySize = static_cast<HeaderSize_t>(sizeof(ReliableNetMessage) - sizeof(void*)); 
 		}
 	
 	private:
-		unsigned short myAckID;
+		unsigned short mySequenceNr;
 	};
 
 	class HandshakeMessage : public ReliableNetMessage
