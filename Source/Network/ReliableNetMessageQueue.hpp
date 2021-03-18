@@ -34,7 +34,7 @@ namespace Network
 		};
 
 		std::vector<ReliableMessageQueueItem> myQueueItems;
-		unsigned short myReliableAckID = 0;
+		unsigned short mySequenceNr = 0;
 	};
 
 	template<size_t _SIZE>
@@ -44,11 +44,11 @@ namespace Network
 		static_assert(std::is_base_of_v<ReliableNetMessage, T>, "T must derive from ReliableNetMessage");
 
 		ReliableMessageQueueItem item(aResendAttempts, aResendWaitTime);
-		item.myMessage            = reinterpret_cast<ReliableNetMessage*>(new T(aMessage));
-		item.myMessage->mySize    = sizeof(T) - sizeof(void*);
-		item.myMessage->myAckID   = myReliableAckID++;
-		item.myDestinationAddress = aDestinationAddress;
-		item.myTimestamp          = std::chrono::steady_clock::now();
+		item.myMessage               = reinterpret_cast<ReliableNetMessage*>(new T(aMessage));
+		item.myMessage->mySize       = sizeof(T) - sizeof(void*);
+		item.myMessage->mySequenceNr = mySequenceNr++;
+		item.myDestinationAddress    = aDestinationAddress;
+		item.myTimestamp             = std::chrono::steady_clock::now();
 		myQueueItems.push_back(item);
 	}
 

@@ -16,17 +16,18 @@ void Network::Socket::Bind(const Address& aAddress)
 {
 	if (bind(mySocket, (const sockaddr*)&aAddress, sizeof(aAddress)) == SOCKET_ERROR)
 	{
-		// TODO: Error
+		std::cout << "Error when binding socket. " << WSAGetLastError() << std::endl;
 	}
 }
 
 void Network::Socket::BindToLocal()
 {
-	Address addr = Address(Constants::DEFAULT_PORT);
-	if (bind(mySocket, (sockaddr*)&addr, sizeof(addr)) == SOCKET_ERROR)
+	Address addr = Address("127.0.0.1", Constants::DEFAULT_PORT);
+	sockaddr_in sockAddr;
+	addr.ToSockAddr(sockAddr);
+	if (bind(mySocket, (sockaddr*)&sockAddr, sizeof(sockaddr)) == SOCKET_ERROR)
 	{
-		// TODO: Error
-		std::cout << "Error binding to local." << std::endl;
+		std::cout << "Error binding to localhost. " << WSAGetLastError() << std::endl;
 	}
 }
 

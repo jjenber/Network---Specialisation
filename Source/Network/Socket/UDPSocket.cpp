@@ -15,7 +15,9 @@ Network::UDPSocket::UDPSocket()
 
 int Network::UDPSocket::Send(const char* aDataBuf, int aBufLen, const Address& aAddress)
 {
-	return sendto(mySocket, aDataBuf, aBufLen, 0, (sockaddr*)&aAddress, sizeof(aAddress));
+	sockaddr_in sockAddr;
+	aAddress.ToSockAddr(sockAddr);
+	return sendto(mySocket, aDataBuf, aBufLen, 0, (sockaddr*)&sockAddr, sizeof(sockAddr));
 }
 
 int Network::UDPSocket::Send(const NetMessage& aMessage, const Address& aAddress)
@@ -26,11 +28,14 @@ int Network::UDPSocket::Send(const NetMessage& aMessage, const Address& aAddress
 	return Send(buf, aMessage.mySize, aAddress);
 }
 
-bool Network::UDPSocket::Receive(const char* aDataBuf, int aBufLen, const Address& aAddress, int& aReceivedLength)
+bool Network::UDPSocket::Receive(const char* aDataBuf, int aBufLen, Address& aAddress, int& aReceivedLength)
 {
-	aReceivedLength = sizeof(aAddress);
+	sockaddr_in addr;
+	aReceivedLength = sizeof(addr);
+	int result = recvfrom(mySocket, (char*)aDataBuf, aBufLen, 0, (sockaddr*)&addr, &aReceivedLength);
+	aAddress.FromSockAddr(addr);
 	return 
-		recvfrom(mySocket, (char*)aDataBuf, aBufLen, 0, (sockaddr*)&aAddress, &aReceivedLength) != SOCKET_ERROR && 
+		result != SOCKET_ERROR && 
 		WSAGetLastError() != WSAEWOULDBLOCK;
 }
 

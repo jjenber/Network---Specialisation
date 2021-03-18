@@ -29,6 +29,14 @@ void Network::Server::ReceiveIncomingMessages()
 	while (myUDPSocket.Receive(recvBuf, Constants::MAX_BUFFER_SIZE, addr, length))
 	{
 		myReceivedMessages.EnqueueReceived(recvBuf);
+		auto d = mds.find(addr);
+		if (d == mds.end())
+		{
+			mds.emplace(addr, UDPConnection());
+			std::cout << "New connection: " << addr.ToString() << std::endl;
+		}
+		else
+			std::cout << "Existeing: " <<addr.ToString() << std::endl;
 	}
 
 	while (!myReceivedMessages.Empty())
