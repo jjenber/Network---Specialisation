@@ -9,7 +9,7 @@ void Network::Server::Startup()
 	myUDPSocket.SetBlocking(false);
 }
 
-int Network::Server::GetNextFreeConnectionSlot()
+int Network::Server::GetNextFreeClientSlot()
 {
 	for (int i = 0; i < Constants::MAX_CLIENT_COUNT; i++)
 	{
@@ -30,18 +30,20 @@ int Network::Server::FindConnectedClientSlot(const Address& aAddress)
 			return i;
 		}
 	}
-	return NoClientFound;
+	return ClientNotFound;
 }
 
 void Network::Server::ReceiveIncomingMessages()
 {
 	Address fromAddress;
 	char recvBuf[Constants::MAX_BUFFER_SIZE]{};
+	int clientSlot = Server::ClientNotFound;
 
 	while (myUDPSocket.Receive(recvBuf, fromAddress))
 	{
 		myReceivedMessages.EnqueueReceived(recvBuf);
-		CheckNewConnection(myReceivedMessages.Peek(), fromAddress);
+		int clientSlot = FindConnectedClientSlot(fromAddress);
+		CheckNewConnection(myReceivedMessages.Peek(), fromAddress, clientSlot);
 	}
 
 	while (!myReceivedMessages.Empty())
@@ -50,35 +52,36 @@ void Network::Server::ReceiveIncomingMessages()
 	}
 }
 
-void Network::Server::Decode(MessageID_t aNetMessageID)
+void Network::Server::Update(const float aDeltatime)
 {
-	switch (aNetMessageID)
-	{
-		case eNETMESSAGE_HANDSHAKE:
-		{
-			ReliableNetMessage msg;
-			myReceivedMessages.Dequeue(msg);
-			
-			break;
-		}
-	default:
-
-		break;
-	}
 }
 
-void Network::Server::CheckNewConnection(MessageID_t aMessageID, const Address& aAddress)
+void Network::Server::SendHeartbeat()
 {
-	switch (aMessageID)
+}
+
+void Network::Server::Decode(MessageID_t aNetMessageID)
+{
+
+}
+
+void Network::Server::CheckNewConnection(MessageID_t aMessageID, const Address& aAddress, int aClientSlot)
+{
+	if (aMessageID != eNETMESSAGE_HANDSHAKE) { return; }
+
+	if (aClientSlot == ClientNotFound)
 	{
-	case eNETMESSAGE_HANDSHAKE:
-	{
-		ReliableNetMessage msg;
-		myReceivedMessages.Dequeue(msg);
-		msg.GetSequence();
-		break;
+		aClientSlot = GetNextFreeClientSlot();
+		myClientAddresses[aClientSlot] = aAddress;
+		myConnectedClients[aClientSlot] = true;
+		myClientData[aClientSlot] = ClientData{};
+
+		std::cout << "New client " << aAddress.ToString() << std::endl;
 	}
-	default:
-		break;
-	}
+
+	HandshakeMessage msg;
+	myReceivedMessages.Dequeue(msg);
+	msg.myClientSlot = aClientSlot;
+	myUDPSocket.Send(msg, aAddress);
+	std::cout << "Responding to handshake" << std::endl;
 }

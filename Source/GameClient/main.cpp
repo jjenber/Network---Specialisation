@@ -11,7 +11,7 @@ int main()
 
 	std::cout << "Connecting" << std::endl;
 	client.ConnectToServer();
-	std::cout << "Connected!!" << std::endl;
+	std::cout << "Connected at slot: " << client.GetClientSlot() << std::endl;
 
 	while (true)
 	{

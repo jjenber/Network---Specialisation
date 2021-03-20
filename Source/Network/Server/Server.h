@@ -8,6 +8,7 @@ namespace Network
 {
 	struct ClientData
 	{
+
 	};
 
 	class Server
@@ -17,14 +18,16 @@ namespace Network
 		
 		void ReceiveIncomingMessages();
 
+		void Update(const float aDeltatime);
+		void SendHeartbeat();
 	private:
-		int GetNextFreeConnectionSlot();
+		int GetNextFreeClientSlot();
 
 		int FindConnectedClientSlot(const Address& aAddress);
 		
 		void Decode(MessageID_t aMessageID);
 
-		void CheckNewConnection(MessageID_t aMessageID, const Address& aAddress);
+		void CheckNewConnection(MessageID_t aMessageID, const Address& aAddress, int aClientSlot);
 
 		UDPSocket myUDPSocket;
 		NetMessageQueue<1024> myReceivedMessages;
@@ -34,6 +37,6 @@ namespace Network
 		std::bitset<Constants::MAX_CLIENT_COUNT> myConnectedClients;
 		size_t myConnectedClientsCount;
 
-		const static int NoClientFound = -1;
+		const static int ClientNotFound = -1;
 	};
 }

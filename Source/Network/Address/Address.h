@@ -22,11 +22,12 @@ namespace Network
 		void SetIPFromString(const std::string& aString);
 
 		void Clear();
-		
-		void ToSockAddr(sockaddr_in& aSockAddr) const;
 
+		void ToSockAddr(sockaddr_in& aSockAddr) const;
 		std::string ToString() const;
-		
+
+		bool Valid() const;
+
 		uint32_t GetIP() const { return myIP; }
 		uint16_t GetPort() const { return myPort; }
 	private:

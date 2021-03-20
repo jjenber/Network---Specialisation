@@ -1,6 +1,6 @@
 // ServerAdmin.cpp : Defines the entry point for the application.
 //
-
+#define NOMINMAX
 #include "framework.h"
 #include "ServerAdmin.h"
 #include "Window.h"

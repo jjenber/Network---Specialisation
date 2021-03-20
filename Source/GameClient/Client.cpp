@@ -13,11 +13,25 @@ void Network::Client::Init()
 
 void Network::Client::Update()
 {
+	Timer timer;
+	HandshakeMessage msg(eNETMESSAGE_HANDSHAKE);
+	while (true)
+	{
+		timer.Update();
+		if (timer.GetTotalTime() > 5.f)
+		{
+			myUDPSocket.Send(msg, myMainServerAddress);
+			timer.Reset();
+			myUDPSocket.Print();
+		}
+
+		RecieveIncomingMessages();
+	}
 }
 
 void Network::Client::ConnectToServer()
 {
-	ReliableNetMessage msg(eNETMESSAGE_HANDSHAKE);
+	HandshakeMessage msg(eNETMESSAGE_HANDSHAKE);
 	
 	myConnectionStatus = eConnectionStatus::Connecting;
 	myUDPSocket.Send(msg, myMainServerAddress);

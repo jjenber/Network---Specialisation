@@ -1,6 +1,7 @@
 #pragma once
 #include "Config.h"
 #include <string>
+#include <limits>
 
 #pragma warning ( disable : 26812 )
 
@@ -8,10 +9,12 @@ namespace Network
 {
 	using MessageID_t  = NET_MSG_TYPE;
 	using HeaderSize_t = NET_MSG_HEADER_SIZE_TYPE;
+	using ClientSlot_t = NET_CLIENT_SLOT_TYPE;
 
 	enum eNetMessageID : MessageID_t
 	{
 		eNETMESSAGE_NONE = 0,
+		eNETMESSAGE_DISCONNECT,
 		eNETMESSAGE_HANDSHAKE,
 		eNETMESSAGE_CHAT,
 
@@ -33,10 +36,10 @@ namespace Network
 		virtual ~NetMessage() {}
 
 		constexpr eNetMessageID GetMessageID() const { return myMessageID; }
-	
-	public:
+
 		eNetMessageID myMessageID;
-		HeaderSize_t   mySize;
+		ClientSlot_t  mySenderID = (std::numeric_limits<ClientSlot_t>::max());
+		HeaderSize_t  mySize;
 	};
 
 	class ReliableNetMessage : public NetMessage
@@ -57,7 +60,10 @@ namespace Network
 	{
 	public:
 		HandshakeMessage(int aClientSlot = UCHAR_MAX) 
-			: NetMessage(eNETMESSAGE_HANDSHAKE) {}
+			: NetMessage(eNETMESSAGE_HANDSHAKE) 
+		{
+			mySize += sizeof(HandshakeMessage) - sizeof(NetMessage);
+		}
 
 		unsigned char myClientSlot = UCHAR_MAX;
 	};

@@ -17,6 +17,10 @@ void Network::Address::SetFromSockAddr(const sockaddr_in& aSockAddr)
 {
 	myIP = aSockAddr.sin_addr.s_addr;
 	myPort = ntohs(aSockAddr.sin_port);
+	if (aSockAddr.sin_family == AF_INET)
+	{
+		myType = eType::Ipv4;
+	}
 }
 
 void Network::Address::ToSockAddr(sockaddr_in& aSockAddr) const
@@ -59,6 +63,11 @@ std::string Network::Address::ToString() const
 		myPort;
 
 	return stream.str();
+}
+
+bool Network::Address::Valid() const
+{
+	return myType != eType::Undefined;
 }
 
 

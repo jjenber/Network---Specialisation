@@ -9,6 +9,7 @@ Network::UDPSocket::UDPSocket()
 	if ((mySocket = socket(AF_INET, SOCK_DGRAM, 0)) == INVALID_SOCKET)
 	{
 		std::cout << "Failed to create UDP socket. " << WSAGetLastError() << std::endl;
+		return;
 	}
 }
 

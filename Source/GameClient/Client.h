@@ -18,6 +18,8 @@ namespace Network
 		void Init();
 		void Update();
 		void ConnectToServer();
+
+		int GetClientSlot() const { return myClientSlot; }
 	private:
 		void RecieveIncomingMessages();
 		void Decode(MessageID_t aMessageID);
