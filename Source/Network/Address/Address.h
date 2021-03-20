@@ -13,7 +13,7 @@ namespace Network
 			Ipv4,
 		};
 
-		Address() = default;
+		Address();
 		Address(const std::string& aAddress, unsigned short aPort);
 		
 		bool operator==(const Address& aAddress) const;

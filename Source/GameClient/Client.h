@@ -1,5 +1,6 @@
 #include "Common.h"
-#include "NetMessageQueue.hpp"
+#include "NetMessage\NetMessageQueue.hpp"
+#include "NetMessage\ReliableNetMessageQueue.h"
 
 enum eConnectionStatus
 {
@@ -28,6 +29,7 @@ namespace Network
 		UDPSocket myUDPSocket;
 		Address myMainServerAddress;
 		NetMessageQueue<1024> myReceivedMessages;
+		ReliableNetMessageQueue myReliableMessageQueue;
 		std::atomic<eConnectionStatus> myConnectionStatus = eConnectionStatus::NotConnected;
 		
 		int myClientSlot = INT_MAX;

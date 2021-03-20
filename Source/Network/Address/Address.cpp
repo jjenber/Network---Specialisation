@@ -3,6 +3,10 @@
 #include <iostream>
 #include <sstream>
 
+Network::Address::Address() : myIP(0), myPort(0), myType(eType::Undefined)
+{
+}
+
 Network::Address::Address(const std::string& aAddress, unsigned short aPort) : myPort(aPort)
 {
 	SetIPFromString(aAddress);

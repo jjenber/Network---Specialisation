@@ -19,6 +19,9 @@
     <Filter Include="Timer">
       <UniqueIdentifier>{1aa8cc70-a0ae-41dc-8c04-e3459bbae916}</UniqueIdentifier>
     </Filter>
+    <Filter Include="NetMessage">
+      <UniqueIdentifier>{542657d4-707f-486a-8fb4-5a044d534133}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -27,7 +30,6 @@
     <ClInclude Include="pch.h">
       <Filter>Precompiled</Filter>
     </ClInclude>
-    <ClInclude Include="NetMessageQueue.hpp" />
     <ClInclude Include="Config.h" />
     <ClInclude Include="Socket\UDPSocket.h">
       <Filter>Socket</Filter>
@@ -44,11 +46,18 @@
     <ClInclude Include="Server\Server.h">
       <Filter>Server</Filter>
     </ClInclude>
-    <ClInclude Include="NetMessage.h" />
     <ClInclude Include="Common.h" />
-    <ClInclude Include="ReliableNetMessageQueue.hpp" />
     <ClInclude Include="Timer\Timer.h">
       <Filter>Timer</Filter>
+    </ClInclude>
+    <ClInclude Include="NetMessage\NetMessage.h">
+      <Filter>NetMessage</Filter>
+    </ClInclude>
+    <ClInclude Include="NetMessage\NetMessageQueue.hpp">
+      <Filter>NetMessage</Filter>
+    </ClInclude>
+    <ClInclude Include="NetMessage\ReliableNetMessageQueue.h">
+      <Filter>NetMessage</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -70,9 +79,14 @@
     <ClCompile Include="Server\Server.cpp">
       <Filter>Server</Filter>
     </ClCompile>
-    <ClCompile Include="NetMessage.cpp" />
     <ClCompile Include="Timer\Timer.cpp">
       <Filter>Timer</Filter>
+    </ClCompile>
+    <ClCompile Include="NetMessage\NetMessage.cpp">
+      <Filter>NetMessage</Filter>
+    </ClCompile>
+    <ClCompile Include="NetMessage\ReliableNetMessageQueue.cpp">
+      <Filter>NetMessage</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

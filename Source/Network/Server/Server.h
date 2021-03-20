@@ -1,5 +1,5 @@
 #include "Common.h"
-#include "NetMessageQueue.hpp"
+#include "NetMessage\NetMessageQueue.hpp"
 #include <array>
 #include <bitset>
 #include <unordered_map>
@@ -8,7 +8,9 @@ namespace Network
 {
 	struct ClientData
 	{
-
+		double connectionTime = 0;
+		double timeSinceHeartbeatSent = 0;
+		double timeSinceHeartbeatReveived = 0;
 	};
 
 	class Server
@@ -19,7 +21,11 @@ namespace Network
 		void ReceiveIncomingMessages();
 
 		void Update(const float aDeltatime);
+
 		void SendHeartbeat();
+		
+		bool HasFreeSlot() const { return myConnectedClientsCount < Constants::MAX_CLIENT_COUNT; }
+
 	private:
 		int GetNextFreeClientSlot();
 
@@ -38,5 +44,6 @@ namespace Network
 		size_t myConnectedClientsCount;
 
 		const static int ClientNotFound = -1;
+		double myTime;
 	};
 }

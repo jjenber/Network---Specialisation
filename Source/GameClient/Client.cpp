@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "Client.h"
-#include "NetMessage.h"
+#include "NetMessage\NetMessage.h"
 #include "Timer\Timer.h"
 #include <iostream>
 #include <chrono>
@@ -13,20 +13,7 @@ void Network::Client::Init()
 
 void Network::Client::Update()
 {
-	Timer timer;
-	HandshakeMessage msg(eNETMESSAGE_HANDSHAKE);
-	while (true)
-	{
-		timer.Update();
-		if (timer.GetTotalTime() > 5.f)
-		{
-			myUDPSocket.Send(msg, myMainServerAddress);
-			timer.Reset();
-			myUDPSocket.Print();
-		}
 
-		RecieveIncomingMessages();
-	}
 }
 
 void Network::Client::ConnectToServer()
@@ -86,6 +73,13 @@ void Network::Client::Decode(MessageID_t aMessageID)
 		myConnectionStatus = eConnectionStatus::Connected;
 		break;
 	}
+	case eNETMESSAGE_HEARTBEAT:
+	{
+		NetMessage msg;
+		msg.mySenderID = myClientSlot;
+		myUDPSocket.Send(msg, myMainServerAddress);
+		break;
+	}
 	default:
 		break;
 	}
@@ -93,4 +87,8 @@ void Network::Client::Decode(MessageID_t aMessageID)
 
 void Network::Client::DecodeReliable(MessageID_t aMessageID)
 {
+	NetMessage ack(eNETMESSAGE_ACK);
+	myUDPSocket.Send(ack, myMainServerAddress);
+
+	// Handle the incoming message
 }

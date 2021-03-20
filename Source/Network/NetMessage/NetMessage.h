@@ -14,11 +14,14 @@ namespace Network
 	enum eNetMessageID : MessageID_t
 	{
 		eNETMESSAGE_NONE = 0,
-		eNETMESSAGE_DISCONNECT,
 		eNETMESSAGE_HANDSHAKE,
+		eNETMESSAGE_SERVER_FULL,
+		eNETMESSAGE_ACK,
+		eNETMESSAGE_HEARTBEAT,
 		eNETMESSAGE_CHAT,
 
 		eNETMESSAGE_RELIABLE_ID = 126,
+		eNETMESSAGE_DISCONNECT,
 	};
 
 #pragma pack(push, 1)
@@ -44,7 +47,7 @@ namespace Network
 
 	class ReliableNetMessage : public NetMessage
 	{
-		template<size_t> friend class ReliableNetMessageQueue;
+		friend class ReliableNetMessageQueue;
 	public:
 		ReliableNetMessage(const eNetMessageID aMessageType = eNETMESSAGE_NONE) 
 			: NetMessage(aMessageType), mySequenceNr(USHRT_MAX)
