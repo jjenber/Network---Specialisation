@@ -172,6 +172,7 @@ namespace Network
 			memcpy(&header.myMessageID, aDataBuffer + readPos, NetMessage::Size());
 			
 			assert(myBack + header.mySize < _SIZE && "Buffer overflow. No room for databuffer.");
+			assert(header.myMessageID != eNETMESSAGE_NONE && "Failed to decode message.");
 
 			// Enqueue 
 			memcpy(myDataBuffer.data() + myBack, aDataBuffer + readPos, header.mySize);

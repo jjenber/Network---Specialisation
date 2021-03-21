@@ -2,6 +2,7 @@
 #include "Config.h"
 #include <string>
 #include <limits>
+#include <cassert>
 
 #pragma warning ( disable : 26812 )
 
@@ -16,7 +17,7 @@ namespace Network
 		eNETMESSAGE_NONE = 0,
 		eNETMESSAGE_HANDSHAKE,
 		eNETMESSAGE_SERVER_FULL,
-		eNETMESSAGE_ACK,
+		eNETMESSAGE_ACKNOWLEDGEMENT,
 		eNETMESSAGE_HEARTBEAT,
 		eNETMESSAGE_CHAT,
 
@@ -45,19 +46,18 @@ namespace Network
 		HeaderSize_t  mySize;
 	};
 
-	class ReliableNetMessage : public NetMessage
+	template<class T>
+	static constexpr HeaderSize_t GetSizeOfMessage()
 	{
-		friend class ReliableNetMessageQueue;
-	public:
-		ReliableNetMessage(const eNetMessageID aMessageType = eNETMESSAGE_NONE) 
-			: NetMessage(aMessageType), mySequenceNr(USHRT_MAX)
-		{ 
-			mySize = static_cast<HeaderSize_t>(sizeof(ReliableNetMessage) - sizeof(void*)); 
-		}
-		unsigned short GetSequence() const { return mySequenceNr; }
-	private:
-		unsigned short mySequenceNr;
-	};
+		static_assert(std::is_base_of_v<NetMessage, T>, "Type must derive from NetMessage.");
+		return (sizeof(T) - sizeof(NetMessage)) + GetSizeOfMessage<NetMessage>();
+	}
+	template <> 
+	static constexpr HeaderSize_t GetSizeOfMessage<NetMessage>()
+	{
+		return sizeof(NetMessage) - sizeof(void*);
+	}
+
 
 	class HandshakeMessage : public NetMessage
 	{
@@ -81,5 +81,30 @@ namespace Network
 		char myMessage[Constants::MAX_CHAT_LENGTH];
 		unsigned short myLength = 0;
 	};
+#pragma region ReliableMessages
+	class ReliableNetMessage : public NetMessage
+	{
+		friend class ReliableNetMessageQueue;
+	public:
+		ReliableNetMessage(const eNetMessageID aMessageType = eNETMESSAGE_NONE)
+			: NetMessage(aMessageType), mySequenceNr(USHRT_MAX)
+		{
+			mySize = GetSizeOfMessage<ReliableNetMessage>();
+			assert(mySize == 6);
+		}
+		unsigned short mySequenceNr;
+	};
+	class AcknowledgementMessage : public NetMessage
+	{
+	public:
+		AcknowledgementMessage(unsigned short aSequenceNr = USHRT_MAX) :
+			mySequenceNr(aSequenceNr), NetMessage(eNETMESSAGE_ACKNOWLEDGEMENT) 
+		{
+			mySize = GetSizeOfMessage<AcknowledgementMessage>();
+		}
+		unsigned short mySequenceNr;
+	};
+
+#pragma endregion
 #pragma pack(pop)
 }

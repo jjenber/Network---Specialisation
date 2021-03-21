@@ -3,20 +3,6 @@
 
 namespace Network
 {
-	template <class T>
-	void ReliableNetMessageQueue::Enqueue(T& aMessage, Address aDestinationAddress, int aResendAttempts, float aResendWaitTime)
-	{
-		static_assert(std::is_base_of_v<ReliableNetMessage, T>, "T must derive from ReliableNetMessage");
-
-		ReliableMessageQueueItem item(aResendAttempts, aResendWaitTime);
-		item.myMessage = std::make_shared<T>(aMessage);
-		item.myMessage->mySize = sizeof(T) - sizeof(void*);
-		item.myMessage->mySequenceNr = mySequenceNr++;
-		item.myDestinationAddress = aDestinationAddress;
-		item.myTimestamp = std::chrono::steady_clock::now();
-		myQueueItems.push_back(item);
-	}
-
 	void ReliableNetMessageQueue::Send(UDPSocket& aSocket)
 	{
 		using namespace std::literals;

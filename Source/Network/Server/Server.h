@@ -9,8 +9,8 @@ namespace Network
 	struct ClientData
 	{
 		double connectionTime = 0;
-		double timeSinceHeartbeatSent = 0;
-		double timeSinceHeartbeatReveived = 0;
+		double timeLastHeartbeatSent = 0;
+		double timeLastHeartbeatReceived = 0;
 	};
 
 	class Server
@@ -27,6 +27,8 @@ namespace Network
 		bool HasFreeSlot() const { return myConnectedClientsCount < Constants::MAX_CLIENT_COUNT; }
 
 	private:
+		void DisconnectClient(int aClientSlot);
+
 		int GetNextFreeClientSlot();
 
 		int FindConnectedClientSlot(const Address& aAddress);

@@ -11,9 +11,19 @@ void Network::Client::Init()
 	myMainServerAddress = Address("127.0.0.1", Constants::DEFAULT_PORT);
 }
 
+void Network::Client::Disconnect()
+{
+	ReliableNetMessage disconnect(eNETMESSAGE_DISCONNECT);
+	disconnect.mySenderID = myClientSlot;
+	
+	//myReliableMessageQueue.Enqueue(disconnect, myMainServerAddress, 5, 50);
+	myConnectionStatus = eConnectionStatus::Disconnecting;
+	myUDPSocket.Send(disconnect, myMainServerAddress);
+}
+
 void Network::Client::Update()
 {
-
+	ReceiveIncomingMessages();
 }
 
 void Network::Client::ConnectToServer()
@@ -33,11 +43,11 @@ void Network::Client::ConnectToServer()
 			timer.Reset();
 		}
 
-		RecieveIncomingMessages();
+		ReceiveIncomingMessages();
 	}
 }
 
-void Network::Client::RecieveIncomingMessages()
+void Network::Client::ReceiveIncomingMessages()
 {
 	Address addr;
 	char recvBuf[Constants::MAX_BUFFER_SIZE]{};
@@ -76,8 +86,16 @@ void Network::Client::Decode(MessageID_t aMessageID)
 	case eNETMESSAGE_HEARTBEAT:
 	{
 		NetMessage msg;
+		myReceivedMessages.Dequeue(msg);
 		msg.mySenderID = myClientSlot;
 		myUDPSocket.Send(msg, myMainServerAddress);
+		break;
+	}
+	case eNETMESSAGE_ACKNOWLEDGEMENT:
+	{
+		AcknowledgementMessage msg;
+		myReceivedMessages.Dequeue(msg);
+		myConnectionStatus = eConnectionStatus::Disconnected;
 		break;
 	}
 	default:
@@ -87,8 +105,8 @@ void Network::Client::Decode(MessageID_t aMessageID)
 
 void Network::Client::DecodeReliable(MessageID_t aMessageID)
 {
-	NetMessage ack(eNETMESSAGE_ACK);
+	std::cout << "Recieved reliable: " << aMessageID << std::endl;
+	ReliableNetMessage ack;
+	myReceivedMessages.Dequeue(ack);
 	myUDPSocket.Send(ack, myMainServerAddress);
-
-	// Handle the incoming message
 }

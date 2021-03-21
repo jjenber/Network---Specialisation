@@ -8,6 +8,7 @@
 
 #include "Context\Context.h"
 #include "Server\Server.h"
+#include "Timer\Timer.h"
 
 #include <string>
 #include <imgui.h>
@@ -84,9 +85,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	Network::Server mainServer;
 	mainServer.Startup();
 
+	Timer timer;
 	bool run = true;
 	while (run)
 	{
+		timer.Update();
 		MSG msg = { 0 };
 		while (PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
 		{
@@ -110,7 +113,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 		 
 		ImGui::Begin("Main Server");
-		mainServer.ReceiveIncomingMessages();
+		mainServer.Update(timer.GetDeltaTime());
 		ImGui::End();
 
 

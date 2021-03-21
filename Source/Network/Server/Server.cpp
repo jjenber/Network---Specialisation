@@ -10,6 +10,13 @@ void Network::Server::Startup()
 	myUDPSocket.SetBlocking(false);
 }
 
+void Network::Server::DisconnectClient(int aClientSlot)
+{
+	myConnectedClients[aClientSlot] = false;
+	myClientData[aClientSlot] = ClientData{};
+	std::cout << "Disconnecting " << aClientSlot << std::endl;
+}
+
 int Network::Server::GetNextFreeClientSlot()
 {
 	for (int i = 0; i < Constants::MAX_CLIENT_COUNT; i++)
@@ -51,30 +58,56 @@ void Network::Server::ReceiveIncomingMessages()
 	{
 		Decode(myReceivedMessages.Peek());
 	}
+	myReceivedMessages.Clear();
 }
 
 void Network::Server::Update(const float aDeltatime)
 {
 	myTime += aDeltatime;
 	ReceiveIncomingMessages();
-
-	SendHeartbeat();
+	//SendHeartbeat();
 }
 
 void Network::Server::SendHeartbeat()
 {
-	for (int i = 0; i < myConnectedClients.size(); i++)
-	{
-		if (myConnectedClients.test(i))
-		{
+	NetMessage heartbeat(eNETMESSAGE_HEARTBEAT);
 
+	for (size_t i = 0; i < Constants::MAX_CLIENT_COUNT; i++)
+	{
+		if (myConnectedClients.test(i) && ((myTime - myClientData[i].timeLastHeartbeatSent) > 5.f))
+		{
+			myClientData[i].timeLastHeartbeatSent = myTime;
+			myUDPSocket.Send(heartbeat, myClientAddresses[i]);
+			std::cout << "Sending heartbeat to " << myClientAddresses[i].ToString() << std::endl;
 		}
 	}
 }
 
 void Network::Server::Decode(MessageID_t aNetMessageID)
 {
-
+	switch (aNetMessageID)
+	{
+	case eNETMESSAGE_HEARTBEAT:
+	{
+		NetMessage heartbeat;
+		myReceivedMessages.Dequeue(heartbeat);
+		myClientData[heartbeat.mySenderID].timeLastHeartbeatReceived = myTime;
+		std::cout << "Receive heartbeat to " << myClientAddresses[heartbeat.mySenderID].ToString() << std::endl;
+		break;
+	}
+	case eNETMESSAGE_DISCONNECT:
+	{
+		ReliableNetMessage msg;
+		myReceivedMessages.Dequeue(msg);
+		AcknowledgementMessage ack(msg.mySequenceNr);
+		myUDPSocket.Send(ack, myClientAddresses[msg.mySenderID]);
+		DisconnectClient(msg.mySenderID);
+		break;
+	}
+	default:
+		std::cout << "Unhandled message: " << (int)aNetMessageID << std::endl;
+		break;
+	}
 }
 
 void Network::Server::CheckNewConnection(MessageID_t aMessageID, const Address& aAddress, int aClientSlot)
@@ -83,6 +116,9 @@ void Network::Server::CheckNewConnection(MessageID_t aMessageID, const Address& 
 	{ 
 		return; 
 	}
+
+	HandshakeMessage receivedHandshake;
+	myReceivedMessages.Dequeue(receivedHandshake);
 
 	if (aClientSlot == ClientNotFound && HasFreeSlot())
 	{
@@ -101,13 +137,10 @@ void Network::Server::CheckNewConnection(MessageID_t aMessageID, const Address& 
 		NetMessage serverFull(eNETMESSAGE_SERVER_FULL);
 		myUDPSocket.Send(serverFull, aAddress);
 		std::cout << "New client tried to connect but the server is full." << aAddress.ToString() << std::endl;
+		return;
 	}
-	else
-	{
-		HandshakeMessage msg;
-		myReceivedMessages.Dequeue(msg);
-		msg.myClientSlot = aClientSlot;
-		myUDPSocket.Send(msg, aAddress);
-		std::cout << "Responding to handshake" << std::endl;
-	}
+
+	receivedHandshake.myClientSlot = aClientSlot;
+	myUDPSocket.Send(receivedHandshake, aAddress);
+	std::cout << "Responding to handshake" << std::endl;
 }
