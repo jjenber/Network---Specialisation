@@ -6,7 +6,7 @@ Timer::Timer() : myDeltaTimeInSeconds(0), myTotalTimeInSeconds(0)
 	Reset();
 }
 
-void Timer::Update()
+float Timer::Update()
 {
 	const auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(myClock.now() - myTimeStamp);
 	const auto total   = std::chrono::duration_cast<std::chrono::microseconds>(myClock.now() - myStart);
@@ -15,6 +15,7 @@ void Timer::Update()
 	myTotalTimeInSeconds = static_cast<double>(total.count()) * 0.000001;
 	
 	myTimeStamp = myClock.now();
+	return myDeltaTimeInSeconds;
 }
 
 void Timer::Reset()

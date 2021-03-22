@@ -98,11 +98,13 @@
     <ClInclude Include="ServerAdmin.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="Window.h" />
+    <ClInclude Include="WorldServer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DirectX11Framework.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Window.cpp" />
+    <ClCompile Include="WorldServer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="ServerAdmin.rc" />

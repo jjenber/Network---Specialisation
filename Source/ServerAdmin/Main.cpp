@@ -7,8 +7,8 @@
 #include "DirectX11Framework.h"
 
 #include "Context\Context.h"
-#include "Server\Server.h"
 #include "Timer\Timer.h"
+#include "WorldServer.h"
 
 #include <string>
 #include <imgui.h>
@@ -82,8 +82,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	ImGui::StyleColorsDark();
 
 	Network::Context context;
-	Network::Server mainServer;
-	mainServer.Startup();
+	WorldServer worldServer;
+	worldServer.Startup();
+	worldServer.InstantiateAreaServers();
 
 	Timer timer;
 	bool run = true;
@@ -113,7 +114,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 		 
 		ImGui::Begin("Main Server");
-		mainServer.Update(timer.GetDeltaTime());
 		ImGui::End();
 
 

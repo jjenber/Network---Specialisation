@@ -16,7 +16,7 @@ int main()
 
 	Timer timer;
 	float time = 0;
-	while (client.GetConnectionStatus() != eConnectionStatus::Disconnected)
+	while (client.GetConnectionStatus() != Network::eConnectionStatus::Disconnected)
 	{
 		timer.Update();
 		time += timer.GetDeltaTime();

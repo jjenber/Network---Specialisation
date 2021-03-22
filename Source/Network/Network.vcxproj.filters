@@ -59,6 +59,7 @@
     <ClInclude Include="NetMessage\ReliableNetMessageQueue.h">
       <Filter>NetMessage</Filter>
     </ClInclude>
+    <ClInclude Include="ConnectionStatus.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">

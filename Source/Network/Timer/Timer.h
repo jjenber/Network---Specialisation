@@ -10,7 +10,7 @@ public:
 	Timer& operator=(const Timer& aTimer) = delete;
 	Timer& operator=(Timer&& aTimer) = delete;
 
-	void	Update();
+	float	Update();
 	
 	/// Resets the total time elapsed.
 	void	Reset();

@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31019.35
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MainServer", "MainServer\MainServer.vcxproj", "{1A1C6248-3594-4079-A3CB-7012961F5B15}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ServerAdmin", "ServerAdmin\ServerAdmin.vcxproj", "{5DBA2FE7-E721-4779-85D8-605A3A77C6C8}"
 	ProjectSection(ProjectDependencies) = postProject
 		{39F2CF4F-227D-456D-8C4F-CCBCD36A3CBA} = {39F2CF4F-227D-456D-8C4F-CCBCD36A3CBA}
@@ -20,16 +18,17 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GameClient", "GameClient\Ga
 		{9DDDCFD9-6C98-40FA-9632-C7B08D9E40EA} = {9DDDCFD9-6C98-40FA-9632-C7B08D9E40EA}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AreaServer", "AreaServer\AreaServer.vcxproj", "{5E4B157B-5235-45F3-88BA-62D7E702960B}"
+	ProjectSection(ProjectDependencies) = postProject
+		{9DDDCFD9-6C98-40FA-9632-C7B08D9E40EA} = {9DDDCFD9-6C98-40FA-9632-C7B08D9E40EA}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
 		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{1A1C6248-3594-4079-A3CB-7012961F5B15}.Debug|x64.ActiveCfg = Debug|x64
-		{1A1C6248-3594-4079-A3CB-7012961F5B15}.Debug|x64.Build.0 = Debug|x64
-		{1A1C6248-3594-4079-A3CB-7012961F5B15}.Release|x64.ActiveCfg = Release|x64
-		{1A1C6248-3594-4079-A3CB-7012961F5B15}.Release|x64.Build.0 = Release|x64
 		{5DBA2FE7-E721-4779-85D8-605A3A77C6C8}.Debug|x64.ActiveCfg = Debug|x64
 		{5DBA2FE7-E721-4779-85D8-605A3A77C6C8}.Debug|x64.Build.0 = Debug|x64
 		{5DBA2FE7-E721-4779-85D8-605A3A77C6C8}.Release|x64.ActiveCfg = Release|x64
@@ -46,6 +45,10 @@ Global
 		{1371E19F-43BD-4BAB-910E-146E641EAC3F}.Debug|x64.Build.0 = Debug|x64
 		{1371E19F-43BD-4BAB-910E-146E641EAC3F}.Release|x64.ActiveCfg = Release|x64
 		{1371E19F-43BD-4BAB-910E-146E641EAC3F}.Release|x64.Build.0 = Release|x64
+		{5E4B157B-5235-45F3-88BA-62D7E702960B}.Debug|x64.ActiveCfg = Debug|x64
+		{5E4B157B-5235-45F3-88BA-62D7E702960B}.Debug|x64.Build.0 = Debug|x64
+		{5E4B157B-5235-45F3-88BA-62D7E702960B}.Release|x64.ActiveCfg = Release|x64
+		{5E4B157B-5235-45F3-88BA-62D7E702960B}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

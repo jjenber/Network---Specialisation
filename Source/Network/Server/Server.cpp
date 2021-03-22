@@ -65,7 +65,7 @@ void Network::Server::Update(const float aDeltatime)
 {
 	myTime += aDeltatime;
 	ReceiveIncomingMessages();
-	//SendHeartbeat();
+	SendHeartbeat();
 }
 
 void Network::Server::SendHeartbeat()

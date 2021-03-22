@@ -91,6 +91,7 @@
   <ItemGroup>
     <ClInclude Include="Address\Address.h" />
     <ClInclude Include="Common.h" />
+    <ClInclude Include="ConnectionStatus.h" />
     <ClInclude Include="Context\Context.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="Config.h" />

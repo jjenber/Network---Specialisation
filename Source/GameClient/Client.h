@@ -3,17 +3,6 @@
 #include "NetMessage\ReliableNetMessageQueue.h"
 #include <atomic>
 
-enum eConnectionStatus
-{
-	NotConnected,
-	Connecting,
-	Connected,
-	ConnectionFailed,
-	ConnectionRejected,
-	Disconnecting,
-	Disconnected,
-};
-
 namespace Network
 {
 	class Client
@@ -36,7 +25,7 @@ namespace Network
 		Address myMainServerAddress;
 		NetMessageQueue<1024> myReceivedMessages;
 		ReliableNetMessageQueue myReliableMessageQueue;
-		std::atomic<eConnectionStatus> myConnectionStatus = eConnectionStatus::NotConnected;
+		std::atomic<eConnectionStatus> myConnectionStatus = eConnectionStatus::Disconnected;
 		
 		int myClientSlot = INT_MAX;
 	};
