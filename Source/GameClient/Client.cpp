@@ -28,7 +28,7 @@ void Network::Client::Update()
 
 void Network::Client::ConnectToServer()
 {
-	HandshakeMessage msg(eNETMESSAGE_HANDSHAKE);
+	HandshakeMessage msg(eNETMESSAGE_CLIENT_HANDSHAKE);
 	
 	myConnectionStatus = eConnectionStatus::Connecting;
 	myUDPSocket.Send(msg, myMainServerAddress);
@@ -54,7 +54,7 @@ void Network::Client::ReceiveIncomingMessages()
 
 	while (myUDPSocket.Receive(recvBuf, addr))
 	{
-		myReceivedMessages.EnqueueReceived(recvBuf);
+		myReceivedMessages.EnqueueReceivedBuffer(recvBuf);
 	}
 
 	while (!myReceivedMessages.Empty())
@@ -75,7 +75,7 @@ void Network::Client::Decode(MessageID_t aMessageID)
 {
 	switch (aMessageID)
 	{
-	case eNETMESSAGE_HANDSHAKE:
+	case eNETMESSAGE_CLIENT_HANDSHAKE:
 	{
 		HandshakeMessage message;
 		myReceivedMessages.Dequeue(message);

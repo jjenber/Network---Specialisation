@@ -49,7 +49,7 @@ void Network::Server::ReceiveIncomingMessages()
 
 	while (myUDPSocket.Receive(recvBuf, fromAddress))
 	{
-		myReceivedMessages.EnqueueReceived(recvBuf);
+		myReceivedMessages.EnqueueReceivedBuffer(recvBuf);
 		int clientSlot = FindConnectedClientSlot(fromAddress);
 		CheckNewConnection(myReceivedMessages.Peek(), fromAddress, clientSlot);
 	}
@@ -112,7 +112,7 @@ void Network::Server::Decode(MessageID_t aNetMessageID)
 
 void Network::Server::CheckNewConnection(MessageID_t aMessageID, const Address& aAddress, int aClientSlot)
 {
-	if (aMessageID != eNETMESSAGE_HANDSHAKE)
+	if (aMessageID != eNETMESSAGE_CLIENT_HANDSHAKE)
 	{ 
 		return; 
 	}

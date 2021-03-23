@@ -16,7 +16,7 @@ namespace Network
 	namespace Constants
 	{
 		constexpr int MAX_CHAT_LENGTH = 512;
-		constexpr unsigned short DEFAULT_PORT = 60256u;
+		constexpr unsigned short DEFAULT_PORT = 53255u;
 		constexpr unsigned int MAX_BUFFER_SIZE = 512;
 	
 		constexpr size_t MAX_CLIENT_COUNT = sizeof(NET_CLIENT_SLOT_TYPE);

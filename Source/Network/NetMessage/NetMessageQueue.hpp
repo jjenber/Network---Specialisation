@@ -18,7 +18,7 @@ namespace Network
 		NetMessageQueue& operator=(const NetMessageQueue& aCopy);
 
 		void Enqueue(const NetMessage& aMessage);
-		void EnqueueReceived(char aDataBuffer[Constants::MAX_BUFFER_SIZE]);
+		void EnqueueReceivedBuffer(char aDataBuffer[Constants::MAX_BUFFER_SIZE]);
 
 		/// Returns the type of the next message without modifying the queue.
 		eNetMessageID Peek() const;
@@ -161,7 +161,7 @@ namespace Network
 	}
 
 	template<size_t _SIZE>
-	inline void NetMessageQueue<_SIZE>::EnqueueReceived(char aDataBuffer[Constants::MAX_BUFFER_SIZE])
+	inline void NetMessageQueue<_SIZE>::EnqueueReceivedBuffer(char aDataBuffer[Constants::MAX_BUFFER_SIZE])
 	{
 		int messageCount = static_cast<int>(aDataBuffer[0]);
 		size_t readPos = 1;

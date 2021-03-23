@@ -15,8 +15,10 @@ namespace Network
 	enum eNetMessageID : MessageID_t
 	{
 		eNETMESSAGE_NONE = 0,
-		eNETMESSAGE_HANDSHAKE,
 		eNETMESSAGE_AREA_SERVER_HANDSHAKE,
+		eNETMESSAGE_AREA_SERVER_DEPLOY,
+
+		eNETMESSAGE_CLIENT_HANDSHAKE = 64,
 		eNETMESSAGE_SERVER_FULL,
 		eNETMESSAGE_ACKNOWLEDGEMENT,
 		eNETMESSAGE_HEARTBEAT,
@@ -64,7 +66,7 @@ namespace Network
 	{
 	public:
 		HandshakeMessage(int aClientSlot = UCHAR_MAX) 
-			: NetMessage(eNETMESSAGE_HANDSHAKE) 
+			: NetMessage(eNETMESSAGE_CLIENT_HANDSHAKE) 
 		{
 			mySize += sizeof(HandshakeMessage) - sizeof(NetMessage);
 		}

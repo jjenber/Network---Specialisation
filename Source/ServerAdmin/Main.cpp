@@ -84,7 +84,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	Network::Context context;
 	WorldServer worldServer;
 	worldServer.Startup();
-	worldServer.InstantiateAreaServers();
+	//worldServer.InstantiateAreaServers();
 
 	Timer timer;
 	bool run = true;
@@ -114,6 +114,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 		 
 		ImGui::Begin("Main Server");
+		worldServer.ReceiveIncomingMessages();
 		ImGui::End();
 
 
