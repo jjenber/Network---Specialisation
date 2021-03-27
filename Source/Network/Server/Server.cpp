@@ -95,7 +95,7 @@ void Network::Server::Decode(MessageID_t aNetMessageID)
 		std::cout << "Receive heartbeat to " << myClientAddresses[heartbeat.mySenderID].ToString() << std::endl;
 		break;
 	}
-	case eNETMESSAGE_DISCONNECT:
+	case eNETMESSAGE_R_DISCONNECT:
 	{
 		ReliableNetMessage msg;
 		myReceivedMessages.Dequeue(msg);

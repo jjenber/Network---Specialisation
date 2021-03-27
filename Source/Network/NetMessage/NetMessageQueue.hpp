@@ -33,7 +33,7 @@ namespace Network
 		size_t GetLength() const { return myBack; }
 
 		bool Empty() const { return myFront == myBack; }
-		void Clear() { myFront = 0; myBack = 0; }
+		void Clear() { myFront = 0; myBack = 0; ZeroMemory(myDataBuffer.data(), _SIZE); }
 
 		// Fills up the send buffer with messages until queue is empty or MAX_BUFFER_SIZE is reached. Returns false if no messages are queued.
 		bool GetNextMessageBufferToSend(char aBufferOut[Constants::MAX_BUFFER_SIZE], size_t& aBufferLen);
@@ -135,7 +135,7 @@ namespace Network
 	{
 		// Make room for leading char to denote total number of messages copied to the buffer.
 		size_t bufferLen = 1;
-		ZeroMemory(aBufferOut, Constants::MAX_BUFFER_SIZE);
+		memset(aBufferOut, 0, Constants::MAX_BUFFER_SIZE);
 
 		int messageCount = 0;
 		NetMessage header;

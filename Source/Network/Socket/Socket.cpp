@@ -11,22 +11,23 @@ void Network::Socket::SetBlocking(bool aBlock)
 	}
 }
 
-void Network::Socket::Bind(const Address& aAddress)
+bool Network::Socket::Bind(const Address& aAddress)
 {
 	sockaddr_in sockAddr{};
 	aAddress.ToSockAddr(sockAddr);
 	if (bind(mySocket, (const sockaddr*)&sockAddr, sizeof(sockAddr)) == SOCKET_ERROR)
 	{
 		std::cout << "Error when binding socket. " << WSAGetLastError() << std::endl;
-		return;
+		return false;
 	}
 	myBoundAddress = aAddress;
+	return true;
 }
 
-void Network::Socket::BindToLocal()
+bool Network::Socket::BindToLocal()
 {
 	Address addr = Address("127.0.0.1", Constants::DEFAULT_PORT);
-	Bind(addr);
+	return Bind(addr);
 }
 
 void Network::Socket::Close()

@@ -1,9 +1,12 @@
 #pragma once
 #include "Common.h"
 #include "NetMessage\NetMessageQueue.hpp"
+#include "NetMessage\ReliableNetMessageQueue.h"
+#include "Connection\UnaryConnection.h"
 
 enum class eAreaServerStatus
 {
+	Shutdown,
 	Idling,
 	Loading,
 	Running,
@@ -12,21 +15,22 @@ enum class eAreaServerStatus
 class AreaServer
 {
 public:
-	void Startup();
-	Network::eConnectionStatus ConnectToWorldServer();
-	bool Update();
+	AreaServer();
+	bool Startup();
+	bool Update(const float aDeltatime);
 
+	inline Network::eConnectionStatus GetStatus() const { return myConnectionStatus; }
 private:
+
 	uint8_t myServerID = UINT8_MAX;
+	Network::UDPSocket mySocket;
 
 	// World Server
+	Network::UnaryConnection myWorldServerConnection;
 	Network::Address myWorldServerAddress;
-	Network::UDPSocket myWorldServerSocket;
 	Network::eConnectionStatus myConnectionStatus;
-	Network::NetMessageQueue<1024> myMessageQueue;
 
 	// Clients
-
 	eAreaServerStatus myStatus;
 	bool myIsRunning;
 };

@@ -10,7 +10,7 @@ namespace Network
 		// Message count
 		sendBuffer[0] = 1;
 
-		std::vector<int> timedOutMessageIndices;
+		std::vector<int> timedOutindices;
 
 		auto now = std::chrono::steady_clock::now();
 		for (int i = 0; i < myQueueItems.size(); i++)
@@ -18,7 +18,7 @@ namespace Network
 			ReliableMessageQueueItem& item = myQueueItems[i];
 			if (item.myResendAttempts <= 0)
 			{
-				timedOutMessageIndices.push_back(i);
+				timedOutindices.push_back(i);
 				continue;
 			}
 
@@ -37,17 +37,34 @@ namespace Network
 		}
 
 		// Remove the timed out messages from the item queue.
-		for (int i = static_cast<int>(timedOutMessageIndices.size()) - 1; i >= 0; i--)
+		for (int i = static_cast<int>(timedOutindices.size()) - 1; i >= 0; i--)
 		{
-			int indexToRemove = timedOutMessageIndices[i];
+			int indexToRemove = timedOutindices[i];
+			
+			myTimedOutMessages.push_back(*myQueueItems[indexToRemove].myMessage);
+			
 			myQueueItems[indexToRemove] = myQueueItems.back();
 			myQueueItems.pop_back();
-			std::cout << "Message timed out" << std::endl;
 		}
+	}
+
+	std::shared_ptr<ReliableNetMessage> ReliableNetMessageQueue::RemoveMessage(unsigned int aSequence)
+	{
+		std::shared_ptr<ReliableNetMessage> netMessage = nullptr;
+		for (size_t i = 0; i < myQueueItems.size(); i++)
+		{
+			if (myQueueItems[i].mySequenceNr == aSequence)
+			{
+				netMessage = myQueueItems[i].myMessage;
+				myQueueItems.erase(myQueueItems.begin() + i);
+			}
+		}
+		return netMessage;
 	}
 
 	inline void ReliableNetMessageQueue::Clear()
 	{
 		myQueueItems.clear();
+		myTimedOutMessages.clear();
 	}
 }

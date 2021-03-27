@@ -90,8 +90,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Address\Address.h" />
+    <ClInclude Include="BaseConnection.h" />
     <ClInclude Include="Common.h" />
     <ClInclude Include="ConnectionStatus.h" />
+    <ClInclude Include="Connection\MultiConnection.h" />
+    <ClInclude Include="Connection\UnaryConnection.h" />
     <ClInclude Include="Context\Context.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="Config.h" />
@@ -106,6 +109,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Address\Address.cpp" />
+    <ClCompile Include="BaseConnection.cpp" />
+    <ClCompile Include="Connection\MultiConnection.cpp" />
+    <ClCompile Include="Connection\UnaryConnection.cpp" />
     <ClCompile Include="Context\Context.cpp" />
     <ClCompile Include="NetMessage\NetMessage.cpp" />
     <ClCompile Include="NetMessage\ReliableNetMessageQueue.cpp" />

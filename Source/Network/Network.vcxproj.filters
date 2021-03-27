@@ -22,6 +22,9 @@
     <Filter Include="NetMessage">
       <UniqueIdentifier>{542657d4-707f-486a-8fb4-5a044d534133}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Connection">
+      <UniqueIdentifier>{d36f67e3-508f-43fc-bc8f-532c4abd3540}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -59,7 +62,18 @@
     <ClInclude Include="NetMessage\ReliableNetMessageQueue.h">
       <Filter>NetMessage</Filter>
     </ClInclude>
-    <ClInclude Include="ConnectionStatus.h" />
+    <ClInclude Include="ConnectionStatus.h">
+      <Filter>Connection</Filter>
+    </ClInclude>
+    <ClInclude Include="Connection\MultiConnection.h">
+      <Filter>Connection</Filter>
+    </ClInclude>
+    <ClInclude Include="Connection\UnaryConnection.h">
+      <Filter>Connection</Filter>
+    </ClInclude>
+    <ClInclude Include="BaseConnection.h">
+      <Filter>Connection</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -88,6 +102,15 @@
     </ClCompile>
     <ClCompile Include="NetMessage\ReliableNetMessageQueue.cpp">
       <Filter>NetMessage</Filter>
+    </ClCompile>
+    <ClCompile Include="Connection\MultiConnection.cpp">
+      <Filter>Connection</Filter>
+    </ClCompile>
+    <ClCompile Include="Connection\UnaryConnection.cpp">
+      <Filter>Connection</Filter>
+    </ClCompile>
+    <ClCompile Include="BaseConnection.cpp">
+      <Filter>Connection</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

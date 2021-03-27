@@ -90,7 +90,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	bool run = true;
 	while (run)
 	{
-		timer.Update();
 		MSG msg = { 0 };
 		while (PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
 		{
@@ -112,9 +111,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		ImGui_ImplWin32_NewFrame();
 		ImGui::NewFrame();
 
-		 
+		// Main update loop
 		ImGui::Begin("Main Server");
-		worldServer.ReceiveIncomingMessages();
+		timer.Update();
+		worldServer.Update(timer.GetDeltaTime());
 		ImGui::End();
 
 

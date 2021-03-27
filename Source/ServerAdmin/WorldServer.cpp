@@ -13,8 +13,21 @@ void WorldServer::Startup()
 	}
 
 	myTime = 0;
-	mySocket.BindToLocal();
-	mySocket.SetBlocking(false);
+
+	myConnection.Init(16, Network::eNetMessageID::eNETMESSAGE_AS_HANDSHAKE, [&](
+		Network::eMessageStatus aStatus, 
+		Network::MessageID_t aID, 
+		size_t aSize, 
+		void* aData)
+		{
+			OnAreaServerMessageReceived(aStatus, aID, aSize, aData);
+		});
+	
+	
+	if (myConnection.Bind("127.0.0.1", Network::Constants::DEFAULT_PORT))
+	{
+		std::cout << "Server is listening at " << myConnection.GetSocket().GetBoundAddress().ToString() << std::endl;
+	}
 }
 
 void WorldServer::InstantiateAreaServers()
@@ -46,75 +59,20 @@ void WorldServer::InstantiateAreaServers()
 	}
 }
 
-void WorldServer::ReceiveIncomingMessages()
+void WorldServer::Update(const float aDeltatime)
+{
+	myConnection.Update(aDeltatime);
+}
+
+void WorldServer::OnAreaServerMessageReceived(Network::eMessageStatus aStatus, Network::MessageID_t aID, size_t aSize, void* aData)
 {
 	using namespace Network;
-	Network::Address fromAddress;
-	char recvBuf[Constants::MAX_BUFFER_SIZE]{};
-
-	while (mySocket.Receive(recvBuf, fromAddress))
+	if (aStatus == eMessageStatus::Success)
 	{
-		myIncomingNetMessages.EnqueueReceivedBuffer(recvBuf);
-		eNetMessageID messageID = myIncomingNetMessages.Peek();
-		if (messageID == eNETMESSAGE_AREA_SERVER_HANDSHAKE || messageID == eNETMESSAGE_CLIENT_HANDSHAKE)
-		{
-			HandleHandshake(messageID, fromAddress);
-		}
+		std::cout << "Received " << aID << std::endl;
 	}
-
-	myIncomingNetMessages.Clear();
-}
-
-void WorldServer::HandleHandshake(Network::eNetMessageID aID, const Network::Address& aAddress)
-{
-	Network::NetMessage msg;
-	myIncomingNetMessages.Dequeue(msg);
-	
-	if (aID == Network::eNETMESSAGE_AREA_SERVER_HANDSHAKE)
+	else if (aStatus == eMessageStatus::TimedOut)
 	{
-		int areaServerSlot = FindConnectedAreaServer(aAddress);
-		if (areaServerSlot < 0)
-		{
-			areaServerSlot = FindFreeAreaServerSlot();
-			if (areaServerSlot != -1)
-			{
-				// Connect the area server
-				myAreaServers.myAddresses[areaServerSlot] = aAddress;
-				myAreaServers.myConnected[areaServerSlot] = true;
-				myAreaServers.myInstances[areaServerSlot] = {};
-				std::cout << "Area server is now connected! " << std::endl;
-			}
-		}
-		msg.mySenderID = areaServerSlot;
+		std::cout << "Timed out " << aID << std::endl;
 	}
-	else if (aID == Network::eNETMESSAGE_CLIENT_HANDSHAKE)
-	{
-		std::cout << "Client attempting to connect." << std::endl;
-	}
-
-	mySocket.Send(msg, aAddress);
-}
-
-int WorldServer::FindConnectedAreaServer(const Network::Address& aAddress) const
-{
-	for (int i = 0; i < MAX_AREA_SERVERS; i++)
-	{
-		if (myAreaServers.myConnected[i] && myAreaServers.myAddresses[i] == aAddress)
-		{
-			return i;
-		}
-	}
-	return -1;
-}
-
-int WorldServer::FindFreeAreaServerSlot() const
-{
-	for (size_t i = 0; i < MAX_AREA_SERVERS; i++)
-	{
-		if (!myAreaServers.myConnected[i])
-		{
-			return static_cast<int>(i);
-		}
-	}
-	return -1;
 }

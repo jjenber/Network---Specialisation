@@ -8,6 +8,13 @@
 
 namespace Network
 {
+	enum class eMessageStatus
+	{
+		Failed,
+		Success,
+		TimedOut,
+	};
+
 	using MessageID_t  = NET_MSG_TYPE;
 	using HeaderSize_t = NET_MSG_HEADER_SIZE_TYPE;
 	using ClientSlot_t = NET_CLIENT_SLOT_TYPE;
@@ -15,8 +22,7 @@ namespace Network
 	enum eNetMessageID : MessageID_t
 	{
 		eNETMESSAGE_NONE = 0,
-		eNETMESSAGE_AREA_SERVER_HANDSHAKE,
-		eNETMESSAGE_AREA_SERVER_DEPLOY,
+		eNETMESSAGE_AS_HANDSHAKE,
 
 		eNETMESSAGE_CLIENT_HANDSHAKE = 64,
 		eNETMESSAGE_SERVER_FULL,
@@ -25,7 +31,11 @@ namespace Network
 		eNETMESSAGE_CHAT,
 
 		eNETMESSAGE_RELIABLE_ID = 126,
-		eNETMESSAGE_DISCONNECT,
+		eNETMESSAGE_R_HANDSHAKE_RESPONSE,
+		eNETMESSAGE_R_AS_DEPLOY,
+		eNETMESSAGE_R_AS_STATUS_LOADING,
+		eNETMESSAGE_R_AS_STATUS_RUNNING,
+		eNETMESSAGE_R_DISCONNECT,
 	};
 
 #pragma pack(push, 1)
@@ -84,7 +94,19 @@ namespace Network
 		char myMessage[Constants::MAX_CHAT_LENGTH];
 		unsigned short myLength = 0;
 	};
-#pragma region ReliableMessages
+
+	class AcknowledgementMessage : public NetMessage
+	{
+	public:
+		AcknowledgementMessage(MessageID_t aAcknowledgedMessageID = eNETMESSAGE_NONE, unsigned short aSequenceNr = USHRT_MAX) :
+			myAcknowledgedMessageID(aAcknowledgedMessageID), mySequenceNr(aSequenceNr), NetMessage(eNETMESSAGE_ACKNOWLEDGEMENT)
+		{
+			mySize = GetSizeOfMessage<AcknowledgementMessage>();
+		}
+		MessageID_t myAcknowledgedMessageID;
+		unsigned short mySequenceNr;
+	};
+
 	class ReliableNetMessage : public NetMessage
 	{
 		friend class ReliableNetMessageQueue;
@@ -97,17 +119,6 @@ namespace Network
 		}
 		unsigned short mySequenceNr;
 	};
-	class AcknowledgementMessage : public NetMessage
-	{
-	public:
-		AcknowledgementMessage(unsigned short aSequenceNr = USHRT_MAX) :
-			mySequenceNr(aSequenceNr), NetMessage(eNETMESSAGE_ACKNOWLEDGEMENT) 
-		{
-			mySize = GetSizeOfMessage<AcknowledgementMessage>();
-		}
-		unsigned short mySequenceNr;
-	};
 
-#pragma endregion
 #pragma pack(pop)
 }

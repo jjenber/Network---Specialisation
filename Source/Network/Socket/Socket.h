@@ -10,8 +10,8 @@ namespace Network
 		virtual ~Socket() {}
 
 		void SetBlocking(bool aBlock);
-		void Bind(const Address& aAddress);
-		void BindToLocal();
+		bool Bind(const Address& aAddress);
+		bool BindToLocal();
 		void Close();
 		const Address& GetBoundAddress();
 	protected:
