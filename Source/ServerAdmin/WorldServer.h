@@ -21,11 +21,12 @@ public:
 	void Update(const float aDeltatime);
 
 private:
-
 	void OnAreaServerMessageReceived(Network::eMessageStatus aStatus, Network::MessageID_t aID, size_t aSize, void* aData);
 
 	std::array<AreaServerInstance, MAX_AREA_SERVERS> myInstances;
 	Network::MultiConnection myConnection;
+
+	Network::NetMessageQueue<1024> myAreaServerMessages;
 	double myTime;
 };
 

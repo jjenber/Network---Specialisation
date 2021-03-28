@@ -27,6 +27,7 @@ namespace Network
 			if (msgID == eNETMESSAGE_ACKNOWLEDGEMENT)
 			{
 				AcknowledgementMessage msg;
+				memcpy(&msg.myMessageID, recvBuf + 1, msg.mySize);
 				myReliableNetMessageQueue.RemoveMessage(msg.mySequenceNr);
 			}
 			else
@@ -39,14 +40,6 @@ namespace Network
 	void BaseConnection::UpdateReliableMessageQueue()
 	{
 		myReliableNetMessageQueue.Send(mySocket);
-		
-		for (auto& message : myReliableNetMessageQueue.GetTimedOutMessages())
-		{
-			if (myCallback)
-			{
-				myCallback(eMessageStatus::TimedOut, message.myMessageID, message.mySize, &message.myMessageID);
-			}
-		}
 		myReliableNetMessageQueue.GetTimedOutMessages().clear();
 	}
 }

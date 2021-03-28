@@ -15,17 +15,15 @@ void WorldServer::Startup()
 	myTime = 0;
 
 	myConnection.Init(16, Network::eNetMessageID::eNETMESSAGE_AS_HANDSHAKE, [&](
-		Network::eMessageStatus aStatus, 
-		Network::MessageID_t aID, 
-		size_t aSize, 
-		void* aData)
+		char aData[Network::Constants::MAX_BUFFER_SIZE])
 		{
-			OnAreaServerMessageReceived(aStatus, aID, aSize, aData);
+			myAreaServerMessages.EnqueueReceivedBuffer(aData);
 		});
 	
 	
 	if (myConnection.Bind("127.0.0.1", Network::Constants::DEFAULT_PORT))
 	{
+		myConnection.GetSocket().SetBlocking(false);
 		std::cout << "Server is listening at " << myConnection.GetSocket().GetBoundAddress().ToString() << std::endl;
 	}
 }
@@ -61,7 +59,7 @@ void WorldServer::InstantiateAreaServers()
 
 void WorldServer::Update(const float aDeltatime)
 {
-	myConnection.Update(aDeltatime);
+	myConnection.Update();
 }
 
 void WorldServer::OnAreaServerMessageReceived(Network::eMessageStatus aStatus, Network::MessageID_t aID, size_t aSize, void* aData)

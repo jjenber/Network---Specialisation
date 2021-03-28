@@ -8,17 +8,9 @@ void Network::UnaryConnection::ConnectAsync(const Address& aAddress, std::functi
     
 }
 
-void Network::UnaryConnection::Update(const float aDeltatime)
+void Network::UnaryConnection::OnReceivedMessage(char aBuffer[Constants::MAX_BUFFER_SIZE], const Network::Address& aFromAddress)
 {
-	myReliableNetMessageQueue.Send(mySocket);
-	for (auto& message : myReliableNetMessageQueue.GetTimedOutMessages())
-	{
-		if (myCallback)
-		{
-			myCallback(eMessageStatus::TimedOut, message.myMessageID, message.mySize, &message.myMessageID);
-		}
-	}
-	myReliableNetMessageQueue.GetTimedOutMessages().clear();
+
 }
 
 bool Network::UnaryConnection::Connect(const Address& aAddress, float aTimeoutInSeconds, eNetMessageID aHandshakeID)

@@ -6,7 +6,7 @@
 
 namespace Network
 {
-	typedef std::function<void(eMessageStatus aStatus, Network::MessageID_t aID, size_t aSize, void* aData)> NetMessageCallback_t;
+	typedef std::function<void(char aData[Constants::MAX_BUFFER_SIZE])> NetMessageCallback_t;
 
 	class BaseConnection
 	{
@@ -18,19 +18,19 @@ namespace Network
 		
 		inline void SetReceiveMessageCallback(NetMessageCallback_t aCallback) { myCallback = aCallback; }
 	
+		void Update();
+
 	protected:
 		template<class NetMessageType>
 		void SendOrEnqueue(const NetMessageType& aNetMessage, const Address& aAddress);
 		
-		void Update();
 
 		UDPSocket&				mySocket;
+		NetMessageCallback_t	myCallback;
 	private:
 		virtual void OnReceivedMessage(char recvBuffer[Constants::MAX_BUFFER_SIZE], const Address& aAddress) = 0;
-
 		void UpdateReliableMessageQueue();
 
-		NetMessageCallback_t	myCallback;
 		ReliableNetMessageQueue	myReliableNetMessageQueue;
 	};
 

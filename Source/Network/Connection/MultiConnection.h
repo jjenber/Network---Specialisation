@@ -3,8 +3,6 @@
 
 namespace Network
 {
-	typedef std::function<void(eMessageStatus aStatus, Network::MessageID_t aID, size_t aSize, void* aData)> NetMessageCallback_t;
-
 	class MultiConnection : public BaseConnection
 	{
 		struct Connection
@@ -17,7 +15,7 @@ namespace Network
 		};
 
 	public:
-		using BaseConnection::BaseConnection;
+		MultiConnection();
 
 		void Init(size_t aMaxConnected, MessageID_t aHandshakeID, NetMessageCallback_t aCallback);
 		bool Bind(const Address& aAddress);
@@ -28,28 +26,25 @@ namespace Network
 
 		template<class NetMessageType>
 		void Send(const NetMessageType& aNetMessage, const Address& aAddress);
-
-		void Update(const float aDeltatime);
 		
 	private:
+		void OnReceivedMessage(char recvBuffer[Constants::MAX_BUFFER_SIZE], const Address& aAddress) override;
 
-		void DecodeReceived(int aConnectionSlot);
-		void HandleAcknowledgement(int aConnectionSlot);
 		void HandleHandshakeMessage(int connectionSlot, const Address& aAddress);
 		
 		int GetConnectionSlot(const Address& aAddress) const;
 		int FindFreeConnectionSlot() const;
 		void EstablishNewConnection(int aConnectionSlot, const Address& aAddress);
 
-		NetMessageCallback_t			myCallback;
-		ReliableNetMessageQueue			myReliableNetMessageQueue;
-		NetMessageQueue<1024>			myReceivedMessages;
+		NetMessageCallback_t	myCallback;
+		NetMessageQueue<1024>	myReceivedMessages;
 
-		std::vector<Connection>			myConnections;
-		size_t							myMaxConnections;
-		MessageID_t						myHandshakeID;
-		
-		const static int				ConnectionSlotNotFound = -1;
+		std::vector<Connection>	myConnections;
+		size_t					myMaxConnections;
+		MessageID_t				myHandshakeID;
+		UDPSocket				mySocket;
+
+		const static int		ConnectionSlotNotFound = -1;
 	};
 
 	template<class NetMessageType>

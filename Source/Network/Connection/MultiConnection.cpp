@@ -1,6 +1,13 @@
 #include "pch.h"
 #include "MultiConnection.h"
 
+Network::MultiConnection::MultiConnection() : 
+	BaseConnection(mySocket),
+	myHandshakeID(0),
+	myMaxConnections(0)
+{
+}
+
 void Network::MultiConnection::Init(size_t aMaxConnected, MessageID_t aHandshakeID, NetMessageCallback_t aCallback)
 {
 	SetMaxConnections(aMaxConnected);
@@ -29,47 +36,26 @@ void Network::MultiConnection::SetHandshakeID(MessageID_t aHandshakeID)
 	myHandshakeID = aHandshakeID;
 }
 
-void Network::MultiConnection::Update(const float aDeltatime)
+void Network::MultiConnection::OnReceivedMessage(char recvBuffer[Constants::MAX_BUFFER_SIZE], const Address& aAddress)
 {
-	BaseConnection::Update();
+	myReceivedMessages.EnqueueReceivedBuffer(recvBuffer);
 
-	Address fromAddress;
-	char recvBuf[Constants::MAX_BUFFER_SIZE]{};
-
-	while (mySocket.Receive(recvBuf, fromAddress))
+	while (!myReceivedMessages.Empty())
 	{
-		myReceivedMessages.EnqueueReceivedBuffer(recvBuf);
-		MessageID_t msgID  = myReceivedMessages.Peek();
-
-		int connectionSlot = GetConnectionSlot(fromAddress);
-		if (msgID == myHandshakeID)
+		MessageID_t id = myReceivedMessages.Peek();
+		int connectionSlot = GetConnectionSlot(aAddress);
+		if (id == myHandshakeID)
 		{
-			HandleHandshakeMessage(connectionSlot, fromAddress);
+			HandleHandshakeMessage(connectionSlot, aAddress);
 		}
-		else if (msgID == eNETMESSAGE_ACKNOWLEDGEMENT)
+		else
 		{
-			HandleAcknowledgement(connectionSlot);
+			NetMessage msg;
+			myReceivedMessages.Dequeue(msg);
+			myCallback(recvBuffer);
 		}
 	}
 }
-
-void Network::MultiConnection::DecodeReceived(int aConnectionSlot)
-{
-
-}
-
-void Network::MultiConnection::HandleAcknowledgement(int aConnectionSlot)
-{
-	AcknowledgementMessage ack;
-	myReceivedMessages.Dequeue(ack);
-
-	std::shared_ptr<ReliableNetMessage> message = myReliableNetMessageQueue.RemoveMessage(ack.mySequenceNr);
-	if (myCallback && message)
-	{
-		myCallback(eMessageStatus::Success, message->myMessageID, message->mySize, &message->myMessageID);
-	}
-}
-
 void Network::MultiConnection::EstablishNewConnection(int aConnectionSlot, const Address& aAddress)
 {
 	myConnections[aConnectionSlot].myAddress = aAddress;

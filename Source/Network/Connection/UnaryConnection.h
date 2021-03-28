@@ -13,11 +13,11 @@ namespace Network
 
 		template<class NetMessageType>
 		void Send(const NetMessageType& aNetMessage);
-		
-		void SetReceiveMessageCallback(NetMessageCallback_t aCallback);
 
-		void Update(const float aDeltatime);
 	private:
+		void OnReceivedMessage(char aBuffer[Constants::MAX_BUFFER_SIZE], const Network::Address& aFromAddress);
+
+		NetMessageCallback_t	myCallback;
 		NetMessageQueue<256>	myMessageQueue;
 		ReliableNetMessageQueue myReliableNetMessageQueue;
 		eConnectionStatus		myConnectionStatus;
@@ -31,15 +31,7 @@ namespace Network
 	{
 		static_assert(std::is_base_of_v<NetMessage, NetMessageType>, "NetMessageType must derive from NetMessage");
 		static_cast<NetMessage&>(aNetMessage).mySenderID = mySlot;
-
-		if constexpr (std::is_base_of_v<ReliableNetMessage, NetMessageType>)
-		{
-			myReliableNetMessageQueue.Enqueue(aNetMessage, myConnectedAddress, 10, 100.f);
-		}
-		else
-		{
-			myMessageQueue.Enqueue(aNetMessage);
-		}
+		SendOrEnqueue(aNetMessage, myConnectedAddress);
 	}
 }
 
