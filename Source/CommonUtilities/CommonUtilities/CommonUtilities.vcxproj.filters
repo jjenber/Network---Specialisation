@@ -1,0 +1,240 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Algorithms">
+      <UniqueIdentifier>{7517a316-b958-46b0-ad1c-748bb698da78}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Algorithms\Pathfinding">
+      <UniqueIdentifier>{da953aac-af71-41e3-bbc8-f76d035cd315}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Debugging">
+      <UniqueIdentifier>{e8ccd60e-c510-4afd-bbc4-7201a1d49a48}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shapes">
+      <UniqueIdentifier>{be87e4c0-92ec-462d-8681-275d20af00c6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Input">
+      <UniqueIdentifier>{482b2940-82b0-4bf4-9952-94dc11bd6952}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="JsonUtility">
+      <UniqueIdentifier>{7fc2bbfa-e79d-4578-901d-39325c63a78c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Math">
+      <UniqueIdentifier>{b3911045-6891-47b6-b39e-c50cfb121a62}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Math\Matrix">
+      <UniqueIdentifier>{7753ca78-89fa-4eac-a56e-b078f53ca8f3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Random">
+      <UniqueIdentifier>{0f042a63-b19e-44ab-8279-39d9380514cb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Timer">
+      <UniqueIdentifier>{d751e9c2-1e11-4fbc-b039-776c9f2dc6ad}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="StringUtility">
+      <UniqueIdentifier>{c50d7b30-c003-4ccc-9b3b-b42882ae0575}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Containers">
+      <UniqueIdentifier>{89a226f7-9cb7-4c04-9eca-d7dee51cc058}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Containers\BinarySearchTree">
+      <UniqueIdentifier>{07e740cc-15c5-484c-9992-a5ef9b7f266a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Containers\DoublyLinkedList">
+      <UniqueIdentifier>{af6ff1d3-0f85-4c48-8301-2f347ef74c7f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="File">
+      <UniqueIdentifier>{92a3aabb-e1e5-41a3-ac3d-66f07753f3b6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hash">
+      <UniqueIdentifier>{3f1a4ca1-3a68-4b35-9773-0bf9d2c0c03b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hash\xxhash">
+      <UniqueIdentifier>{3cc69f6f-f95e-4522-9d05-7186749343bb}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Algorithms\Pathfinding\AStar.cpp">
+      <Filter>Algorithms\Pathfinding</Filter>
+    </ClCompile>
+    <ClCompile Include="Algorithms\Pathfinding\Pathfinding.cpp">
+      <Filter>Algorithms\Pathfinding</Filter>
+    </ClCompile>
+    <ClCompile Include="Debugging\DL_Debug.cpp">
+      <Filter>Debugging</Filter>
+    </ClCompile>
+    <ClCompile Include="Debugging\DL_StackWalker.cpp">
+      <Filter>Debugging</Filter>
+    </ClCompile>
+    <ClCompile Include="Input\InputHandler.cpp">
+      <Filter>Input</Filter>
+    </ClCompile>
+    <ClCompile Include="JsonUtility\JsonUtility.cpp">
+      <Filter>JsonUtility</Filter>
+    </ClCompile>
+    <ClCompile Include="Random\Random.cpp">
+      <Filter>Random</Filter>
+    </ClCompile>
+    <ClCompile Include="Timer\Timer.cpp">
+      <Filter>Timer</Filter>
+    </ClCompile>
+    <ClCompile Include="Algorithms\Pathfinding\Dijkstra.cpp">
+      <Filter>Algorithms\Pathfinding</Filter>
+    </ClCompile>
+    <ClCompile Include="Math\Math.cpp">
+      <Filter>Math</Filter>
+    </ClCompile>
+    <ClCompile Include="StringUtility\StringUtility.cpp">
+      <Filter>StringUtility</Filter>
+    </ClCompile>
+    <ClCompile Include="Input\Gamepad.cpp">
+      <Filter>Input</Filter>
+    </ClCompile>
+    <ClCompile Include="Debugging\StackWalker\StackWalker.cpp">
+      <Filter>Debugging</Filter>
+    </ClCompile>
+    <ClCompile Include="File\FileHelpers.cpp">
+      <Filter>File</Filter>
+    </ClCompile>
+    <ClCompile Include="Hash\Hash.cpp">
+      <Filter>Hash</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Algorithms\Pathfinding\AStar.h">
+      <Filter>Algorithms\Pathfinding</Filter>
+    </ClInclude>
+    <ClInclude Include="Algorithms\Pathfinding\Pathfinding.h">
+      <Filter>Algorithms\Pathfinding</Filter>
+    </ClInclude>
+    <ClInclude Include="Debugging\DL_assert.h">
+      <Filter>Debugging</Filter>
+    </ClInclude>
+    <ClInclude Include="Debugging\DL_Debug.h">
+      <Filter>Debugging</Filter>
+    </ClInclude>
+    <ClInclude Include="Debugging\DL_StackWalker.h">
+      <Filter>Debugging</Filter>
+    </ClInclude>
+    <ClInclude Include="Geometry\AABB3D.h">
+      <Filter>Shapes</Filter>
+    </ClInclude>
+    <ClInclude Include="Geometry\Line.h">
+      <Filter>Shapes</Filter>
+    </ClInclude>
+    <ClInclude Include="Geometry\LineVolume.h">
+      <Filter>Shapes</Filter>
+    </ClInclude>
+    <ClInclude Include="Geometry\Plane.h">
+      <Filter>Shapes</Filter>
+    </ClInclude>
+    <ClInclude Include="Geometry\PlaneVolume.h">
+      <Filter>Shapes</Filter>
+    </ClInclude>
+    <ClInclude Include="Geometry\Ray.h">
+      <Filter>Shapes</Filter>
+    </ClInclude>
+    <ClInclude Include="Geometry\Sphere.h">
+      <Filter>Shapes</Filter>
+    </ClInclude>
+    <ClInclude Include="Input\InputHandler.h">
+      <Filter>Input</Filter>
+    </ClInclude>
+    <ClInclude Include="JsonUtility\JsonUtility.h">
+      <Filter>JsonUtility</Filter>
+    </ClInclude>
+    <ClInclude Include="Math\Matrix\Matrix.h">
+      <Filter>Math\Matrix</Filter>
+    </ClInclude>
+    <ClInclude Include="Math\Matrix\Matrix3x3.h">
+      <Filter>Math\Matrix</Filter>
+    </ClInclude>
+    <ClInclude Include="Math\Matrix\Matrix4x4.h">
+      <Filter>Math\Matrix</Filter>
+    </ClInclude>
+    <ClInclude Include="Math\Vector.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Math\Vector2.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Math\Vector3.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Math\Vector4.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Random\Random.h">
+      <Filter>Random</Filter>
+    </ClInclude>
+    <ClInclude Include="Timer\Timer.h">
+      <Filter>Timer</Filter>
+    </ClInclude>
+    <ClInclude Include="Algorithms\Pathfinding\Dijkstra.hpp">
+      <Filter>Algorithms\Pathfinding</Filter>
+    </ClInclude>
+    <ClInclude Include="Algorithms\Sort.hpp">
+      <Filter>Algorithms</Filter>
+    </ClInclude>
+    <ClInclude Include="Math\Math.hpp">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Random\PerlinNoise.hpp">
+      <Filter>Random</Filter>
+    </ClInclude>
+    <ClInclude Include="StringUtility\StringUtility.h">
+      <Filter>StringUtility</Filter>
+    </ClInclude>
+    <ClInclude Include="Containers\GrowingArray.h">
+      <Filter>Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="Containers\Heap.hpp">
+      <Filter>Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="Containers\MinHeap.hpp">
+      <Filter>Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="Containers\Queue.h">
+      <Filter>Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="Containers\Stack.h">
+      <Filter>Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="Containers\StaticArray.h">
+      <Filter>Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="Containers\VectorOnStack.h">
+      <Filter>Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="Containers\BinarySearchTree\BSTSet.hpp">
+      <Filter>Containers\BinarySearchTree</Filter>
+    </ClInclude>
+    <ClInclude Include="Containers\BinarySearchTree\BSTSetNode.h">
+      <Filter>Containers\BinarySearchTree</Filter>
+    </ClInclude>
+    <ClInclude Include="Containers\DoublyLinkedList\DoublyLinkedList.h">
+      <Filter>Containers\DoublyLinkedList</Filter>
+    </ClInclude>
+    <ClInclude Include="Containers\DoublyLinkedList\DoublyLinkedListNode.h">
+      <Filter>Containers\DoublyLinkedList</Filter>
+    </ClInclude>
+    <ClInclude Include="Input\Gamepad.h">
+      <Filter>Input</Filter>
+    </ClInclude>
+    <ClInclude Include="Debugging\StackWalker\StackWalker.h">
+      <Filter>Debugging</Filter>
+    </ClInclude>
+    <ClInclude Include="File\FileHelpers.h">
+      <Filter>File</Filter>
+    </ClInclude>
+    <ClInclude Include="Hash\Hash.h">
+      <Filter>Hash</Filter>
+    </ClInclude>
+    <ClInclude Include="Hash\xxhash\xxhash.hpp">
+      <Filter>Hash\xxhash</Filter>
+    </ClInclude>
+    <ClInclude Include="Hash\xxhash\xxhash_cx.h">
+      <Filter>Hash\xxhash</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

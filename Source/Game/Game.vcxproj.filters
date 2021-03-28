@@ -4,6 +4,9 @@
     <Filter Include="Precompiled">
       <UniqueIdentifier>{4136f124-5018-4b8c-b6d9-a7780b16471e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Entt">
+      <UniqueIdentifier>{b22e1f15-90c2-4a8b-83a8-d8a67256cad9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -12,11 +15,13 @@
     <ClInclude Include="pch.h">
       <Filter>Precompiled</Filter>
     </ClInclude>
+    <ClInclude Include="Entt\entt.hpp">
+      <Filter>Entt</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
       <Filter>Precompiled</Filter>
     </ClCompile>
-    <ClCompile Include="main.cpp" />
   </ItemGroup>
 </Project>

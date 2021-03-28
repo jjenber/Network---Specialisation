@@ -13,9 +13,6 @@
     <Filter Include="Context">
       <UniqueIdentifier>{c5369340-eff4-44d7-a3e1-53499385db65}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Server">
-      <UniqueIdentifier>{cbf8b97c-295a-461c-b52a-9a1623dae30d}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Timer">
       <UniqueIdentifier>{1aa8cc70-a0ae-41dc-8c04-e3459bbae916}</UniqueIdentifier>
     </Filter>
@@ -45,9 +42,6 @@
     </ClInclude>
     <ClInclude Include="Context\Context.h">
       <Filter>Context</Filter>
-    </ClInclude>
-    <ClInclude Include="Server\Server.h">
-      <Filter>Server</Filter>
     </ClInclude>
     <ClInclude Include="Common.h" />
     <ClInclude Include="Timer\Timer.h">
@@ -90,9 +84,6 @@
     </ClCompile>
     <ClCompile Include="Context\Context.cpp">
       <Filter>Context</Filter>
-    </ClCompile>
-    <ClCompile Include="Server\Server.cpp">
-      <Filter>Server</Filter>
     </ClCompile>
     <ClCompile Include="Timer\Timer.cpp">
       <Filter>Timer</Filter>

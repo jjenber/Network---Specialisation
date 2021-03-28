@@ -1,0 +1,158 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Algorithms\Pathfinding\AStar.cpp" />
+    <ClCompile Include="Algorithms\Pathfinding\Dijkstra.cpp" />
+    <ClCompile Include="Algorithms\Pathfinding\Pathfinding.cpp" />
+    <ClCompile Include="Debugging\DL_Debug.cpp" />
+    <ClCompile Include="Debugging\DL_StackWalker.cpp" />
+    <ClCompile Include="Debugging\StackWalker\StackWalker.cpp" />
+    <ClCompile Include="File\FileHelpers.cpp" />
+    <ClCompile Include="Hash\Hash.cpp" />
+    <ClCompile Include="Input\Gamepad.cpp" />
+    <ClCompile Include="Input\InputHandler.cpp" />
+    <ClCompile Include="JsonUtility\JsonUtility.cpp" />
+    <ClCompile Include="Math\Math.cpp" />
+    <ClCompile Include="Random\Random.cpp" />
+    <ClCompile Include="StringUtility\StringUtility.cpp" />
+    <ClCompile Include="Timer\Timer.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Algorithms\Pathfinding\AStar.h" />
+    <ClInclude Include="Algorithms\Pathfinding\Dijkstra.hpp" />
+    <ClInclude Include="Algorithms\Pathfinding\Pathfinding.h" />
+    <ClInclude Include="Algorithms\Sort.hpp" />
+    <ClInclude Include="Containers\BinarySearchTree\BSTSet.hpp" />
+    <ClInclude Include="Containers\BinarySearchTree\BSTSetNode.h" />
+    <ClInclude Include="Containers\DoublyLinkedList\DoublyLinkedList.h" />
+    <ClInclude Include="Containers\DoublyLinkedList\DoublyLinkedListNode.h" />
+    <ClInclude Include="Containers\GrowingArray.h" />
+    <ClInclude Include="Containers\Heap.hpp" />
+    <ClInclude Include="Containers\MinHeap.hpp" />
+    <ClInclude Include="Containers\Queue.h" />
+    <ClInclude Include="Containers\Stack.h" />
+    <ClInclude Include="Containers\StaticArray.h" />
+    <ClInclude Include="Containers\VectorOnStack.h" />
+    <ClInclude Include="Debugging\DL_assert.h" />
+    <ClInclude Include="Debugging\DL_Debug.h" />
+    <ClInclude Include="Debugging\DL_StackWalker.h" />
+    <ClInclude Include="Debugging\StackWalker\StackWalker.h" />
+    <ClInclude Include="File\FileHelpers.h" />
+    <ClInclude Include="Geometry\AABB3D.h" />
+    <ClInclude Include="Geometry\Line.h" />
+    <ClInclude Include="Geometry\LineVolume.h" />
+    <ClInclude Include="Geometry\Plane.h" />
+    <ClInclude Include="Geometry\PlaneVolume.h" />
+    <ClInclude Include="Geometry\Ray.h" />
+    <ClInclude Include="Geometry\Sphere.h" />
+    <ClInclude Include="Hash\Hash.h" />
+    <ClInclude Include="Hash\xxhash\xxhash.hpp" />
+    <ClInclude Include="Hash\xxhash\xxhash_cx.h" />
+    <ClInclude Include="Input\Gamepad.h" />
+    <ClInclude Include="Input\InputHandler.h" />
+    <ClInclude Include="JsonUtility\JsonUtility.h" />
+    <ClInclude Include="Math\Math.hpp" />
+    <ClInclude Include="Math\Matrix\Matrix.h" />
+    <ClInclude Include="Math\Matrix\Matrix3x3.h" />
+    <ClInclude Include="Math\Matrix\Matrix4x4.h" />
+    <ClInclude Include="Math\Vector.h" />
+    <ClInclude Include="Math\Vector2.h" />
+    <ClInclude Include="Math\Vector3.h" />
+    <ClInclude Include="Math\Vector4.h" />
+    <ClInclude Include="Random\PerlinNoise.hpp" />
+    <ClInclude Include="Random\Random.h" />
+    <ClInclude Include="StringUtility\StringUtility.h" />
+    <ClInclude Include="Timer\Timer.h" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <ProjectGuid>{4FD58EEC-BDCB-4434-80B2-41A0611EF328}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>CommonUtilities</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>Unicode</CharacterSet>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\..\lib.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\..\lib.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+    <IncludePath>$(ProjectDir);$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <IncludePath>$(ProjectDir);$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level4</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level4</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_RELEASE;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>

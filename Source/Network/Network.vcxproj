@@ -102,7 +102,6 @@
     <ClInclude Include="NetMessage\NetMessageQueue.hpp" />
     <ClInclude Include="NetMessage\ReliableNetMessageQueue.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="Server\Server.h" />
     <ClInclude Include="Socket\Socket.h" />
     <ClInclude Include="Socket\UDPSocket.h" />
     <ClInclude Include="Timer\Timer.h" />
@@ -119,7 +118,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="Server\Server.cpp" />
     <ClCompile Include="Socket\Socket.cpp" />
     <ClCompile Include="Socket\UDPSocket.cpp" />
     <ClCompile Include="Timer\Timer.cpp" />
