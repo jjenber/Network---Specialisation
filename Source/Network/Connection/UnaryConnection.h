@@ -9,17 +9,17 @@ namespace Network
 		using BaseConnection::BaseConnection;
 
 		bool Connect(const Address& aAddress, float aTimeoutInSeconds, eNetMessageID aHandshakeID);
-		void ConnectAsync(const Address& aAddress, std::function<void()> myCallback);
 
 		template<class NetMessageType>
 		void Send(const NetMessageType& aNetMessage);
 
+		MessageID_t Peek();
+		bool ReadNextMessage(NetMessage& aMsg);
+
 	private:
 		void OnReceivedMessage(char aBuffer[Constants::MAX_BUFFER_SIZE], const Network::Address& aFromAddress);
 
-		NetMessageCallback_t	myCallback;
-		NetMessageQueue<256>	myMessageQueue;
-		ReliableNetMessageQueue myReliableNetMessageQueue;
+		NetMessageQueue<512>	myReceivedMessages;
 		eConnectionStatus		myConnectionStatus;
 		Address					myConnectedAddress;
 		Address					myAddress;

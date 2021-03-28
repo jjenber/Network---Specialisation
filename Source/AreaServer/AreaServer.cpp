@@ -21,5 +21,18 @@ bool AreaServer::Startup()
 
 bool AreaServer::Update(const float aDeltatime)
 {
+	myWorldServerConnection.Update();
+
+	Network::MessageID_t id = myWorldServerConnection.Peek();
+	while (id != Network::eNETMESSAGE_NONE)
+	{
+		ReadWorldServerMessage(id);
+	}
+
 	return myIsRunning;
+}
+
+void AreaServer::ReadWorldServerMessage(Network::MessageID_t aMessageID)
+{
+	
 }

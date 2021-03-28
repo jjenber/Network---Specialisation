@@ -22,6 +22,7 @@ namespace Network
 
 		/// Returns the type of the next message without modifying the queue.
 		eNetMessageID Peek() const;
+		eNetMessageID Peek(NetMessage& aHeader) const;
 		const unsigned short PeekReliableSequence() const;
 
 		/// Fills the provided message with data from the queue and "removes" it from the queue. The caller allocates memory for the message by checking type using Peek().
@@ -83,6 +84,17 @@ namespace Network
 			memcpy(&type, myDataBuffer.data() + myFront, sizeof(eNetMessageID));
 		}
 		return type;
+	}
+
+	template<size_t _SIZE>
+	inline eNetMessageID NetMessageQueue<_SIZE>::Peek(NetMessage& aHeader) const
+	{
+		aHeader.myMessageID = eNetMessageID::eNETMESSAGE_NONE;
+		if (!Empty())
+		{
+			memcpy(&aHeader.myMessageID, myDataBuffer.data() + myFront, NetMessage::Size());
+		}
+		return aHeader.myMessageID;
 	}
 
 	template<size_t _SIZE>

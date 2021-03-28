@@ -3,14 +3,24 @@
 #include "Timer\Timer.h"
 #include <iostream>
 
-void Network::UnaryConnection::ConnectAsync(const Address& aAddress, std::function<void()> myCallback)
+Network::MessageID_t Network::UnaryConnection::Peek()
 {
-    
+	return myReceivedMessages.Peek();
+}
+
+bool Network::UnaryConnection::ReadNextMessage(NetMessage& aMsg)
+{
+	if (myReceivedMessages.Peek() != eNetMessageID::eNETMESSAGE_NONE)
+	{
+		myReceivedMessages.Dequeue(aMsg);
+		return true;
+	}
+	return false;
 }
 
 void Network::UnaryConnection::OnReceivedMessage(char aBuffer[Constants::MAX_BUFFER_SIZE], const Network::Address& aFromAddress)
 {
-
+	myReceivedMessages.EnqueueReceivedBuffer(aBuffer);
 }
 
 bool Network::UnaryConnection::Connect(const Address& aAddress, float aTimeoutInSeconds, eNetMessageID aHandshakeID)
@@ -38,10 +48,10 @@ bool Network::UnaryConnection::Connect(const Address& aAddress, float aTimeoutIn
 
 		while (mySocket.Receive(buf, from))
 		{
-			myMessageQueue.EnqueueReceivedBuffer(buf);
-			if (myMessageQueue.Peek() == aHandshakeID)
+			myReceivedMessages.EnqueueReceivedBuffer(buf);
+			if (myReceivedMessages.Peek() == aHandshakeID)
 			{
-				myMessageQueue.Dequeue(msg);
+				myReceivedMessages.Dequeue(msg);
 				mySlot = msg.mySenderID;
 				myAddress = mySocket.GetBoundAddress();
 				myConnectionStatus = eConnectionStatus::Connected;
@@ -53,7 +63,7 @@ bool Network::UnaryConnection::Connect(const Address& aAddress, float aTimeoutIn
 			myConnectionStatus = eConnectionStatus::TimedOut;
 		}
 
-		myMessageQueue.Clear();
+		myReceivedMessages.Clear();
 	}
 
 	return myConnectionStatus == eConnectionStatus::Connected;

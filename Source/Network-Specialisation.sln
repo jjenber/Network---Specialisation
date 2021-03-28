@@ -23,6 +23,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AreaServer", "AreaServer\Ar
 		{9DDDCFD9-6C98-40FA-9632-C7B08D9E40EA} = {9DDDCFD9-6C98-40FA-9632-C7B08D9E40EA}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Game", "Game\Game.vcxproj", "{F8D69C01-CCD5-409E-934F-42BB97FCFBFD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -49,6 +51,10 @@ Global
 		{5E4B157B-5235-45F3-88BA-62D7E702960B}.Debug|x64.Build.0 = Debug|x64
 		{5E4B157B-5235-45F3-88BA-62D7E702960B}.Release|x64.ActiveCfg = Release|x64
 		{5E4B157B-5235-45F3-88BA-62D7E702960B}.Release|x64.Build.0 = Release|x64
+		{F8D69C01-CCD5-409E-934F-42BB97FCFBFD}.Debug|x64.ActiveCfg = Debug|x64
+		{F8D69C01-CCD5-409E-934F-42BB97FCFBFD}.Debug|x64.Build.0 = Debug|x64
+		{F8D69C01-CCD5-409E-934F-42BB97FCFBFD}.Release|x64.ActiveCfg = Release|x64
+		{F8D69C01-CCD5-409E-934F-42BB97FCFBFD}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

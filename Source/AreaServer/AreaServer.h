@@ -22,6 +22,8 @@ public:
 	inline Network::eConnectionStatus GetStatus() const { return myConnectionStatus; }
 private:
 
+	void ReadWorldServerMessage(Network::MessageID_t aMessageID);
+
 	uint8_t myServerID = UINT8_MAX;
 	Network::UDPSocket mySocket;
 
