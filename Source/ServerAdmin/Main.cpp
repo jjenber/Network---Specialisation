@@ -113,8 +113,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 		// Main update loop
 		ImGui::Begin("Main Server");
-		timer.Update();
-		worldServer.Update(timer.GetDeltaTime());
+		worldServer.Update(timer.Update());
 		ImGui::End();
 
 

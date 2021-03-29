@@ -13,7 +13,7 @@ void Network::Client::Init()
 
 void Network::Client::Disconnect()
 {
-	ReliableNetMessage disconnect(eNETMESSAGE_DISCONNECT);
+	ReliableNetMessage disconnect(eNETMESSAGE_R_DISCONNECT);
 	disconnect.mySenderID = myClientSlot;
 	
 	//myReliableMessageQueue.Enqueue(disconnect, myMainServerAddress, 5, 50);

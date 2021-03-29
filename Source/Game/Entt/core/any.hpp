@@ -10,6 +10,7 @@
 #include "type_info.hpp"
 #include "type_traits.hpp"
 
+#pragma warning (disable : 26495)
 
 namespace entt {
 

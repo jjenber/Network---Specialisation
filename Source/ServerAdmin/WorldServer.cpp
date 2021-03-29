@@ -14,10 +14,9 @@ void WorldServer::Startup()
 
 	myTime = 0;
 
-	myConnection.Init(16, Network::eNetMessageID::eNETMESSAGE_AS_HANDSHAKE, [&](
-		char aData[Network::Constants::MAX_BUFFER_SIZE])
+	myConnection.Init(16, Network::eNetMessageID::eNETMESSAGE_AS_HANDSHAKE, [&](const Network::Address& aAddress, unsigned short aConnectionSlot)
 		{
-			myAreaServerMessages.EnqueueReceivedBuffer(aData);
+			std::cout << "Connection established at slot " << aConnectionSlot << std::endl;
 		});
 	
 	
@@ -60,17 +59,11 @@ void WorldServer::InstantiateAreaServers()
 void WorldServer::Update(const float aDeltatime)
 {
 	myConnection.Update();
+	myConnection.ClearMessages();
 }
 
-void WorldServer::OnAreaServerMessageReceived(Network::eMessageStatus aStatus, Network::MessageID_t aID, size_t aSize, void* aData)
+void WorldServer::HandleAreaServerMessages()
 {
-	using namespace Network;
-	if (aStatus == eMessageStatus::Success)
-	{
-		std::cout << "Received " << aID << std::endl;
-	}
-	else if (aStatus == eMessageStatus::TimedOut)
-	{
-		std::cout << "Timed out " << aID << std::endl;
-	}
+	
+
 }

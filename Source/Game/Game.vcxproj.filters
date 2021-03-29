@@ -18,10 +18,13 @@
     <ClInclude Include="Entt\entt.hpp">
       <Filter>Entt</Filter>
     </ClInclude>
+    <ClInclude Include="GameWorld.h" />
+    <ClInclude Include="GameDefines.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
       <Filter>Precompiled</Filter>
     </ClCompile>
+    <ClCompile Include="GameWorld.cpp" />
   </ItemGroup>
 </Project>

@@ -3,6 +3,8 @@
 
 namespace Network
 {
+	typedef std::function<void(const Address& aAddress, unsigned short aSlot)> OnConnectionCallback_t;
+
 	class MultiConnection : public BaseConnection
 	{
 		struct Connection
@@ -17,16 +19,17 @@ namespace Network
 	public:
 		MultiConnection();
 
-		void Init(size_t aMaxConnected, MessageID_t aHandshakeID, NetMessageCallback_t aCallback);
+		void Init(size_t aMaxConnected, MessageID_t aHandshakeID, OnConnectionCallback_t aOnConnectionCallback);
 		bool Bind(const Address& aAddress);
 		bool Bind(const std::string& aIP, unsigned short aPort);
 
 		void SetMaxConnections(size_t aMaxConnected);
 		void SetHandshakeID(MessageID_t aHandshakeID);
+		void SetOnConnectionCallback(OnConnectionCallback_t aOnConnectionCallback);
 
 		template<class NetMessageType>
 		void Send(const NetMessageType& aNetMessage, const Address& aAddress);
-		
+
 	private:
 		void OnReceivedMessage(char recvBuffer[Constants::MAX_BUFFER_SIZE], const Address& aAddress) override;
 
@@ -36,8 +39,7 @@ namespace Network
 		int FindFreeConnectionSlot() const;
 		void EstablishNewConnection(int aConnectionSlot, const Address& aAddress);
 
-		NetMessageCallback_t	myCallback;
-		NetMessageQueue<1024>	myReceivedMessages;
+		OnConnectionCallback_t	myOnConnectionCallback;
 
 		std::vector<Connection>	myConnections;
 		size_t					myMaxConnections;

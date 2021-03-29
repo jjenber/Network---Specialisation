@@ -1,7 +1,9 @@
 #pragma once
 #include "NetMessage\NetMessageQueue.hpp"
-#include "Connection\MultiConnection.h"
 #include "NetMessage\ReliableNetMessageQueue.h"
+#include "Connection\MultiConnection.h"
+#include "../AreaServer/AreaServerStatus.h"
+#include "../Game/GameWorld.h"
 #include <bitset>
 
 constexpr auto MAX_AREA_SERVERS = 8;
@@ -9,6 +11,8 @@ constexpr auto MAX_AREA_SERVERS = 8;
 struct AreaServerInstance
 {
 	Network::Address myAddress;
+	eAreaServerStatus myStatus = eAreaServerStatus::Shutdown;
+	std::vector<int> myRegions;
 };
 
 class WorldServer
@@ -21,12 +25,13 @@ public:
 	void Update(const float aDeltatime);
 
 private:
-	void OnAreaServerMessageReceived(Network::eMessageStatus aStatus, Network::MessageID_t aID, size_t aSize, void* aData);
+	void HandleAreaServerMessages();
 
 	std::array<AreaServerInstance, MAX_AREA_SERVERS> myInstances;
 	Network::MultiConnection myConnection;
-
 	Network::NetMessageQueue<1024> myAreaServerMessages;
-	double myTime;
+	double myTime = 0;
+
+	GameWorld myGameWorld;
 };
 

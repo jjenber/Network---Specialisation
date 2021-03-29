@@ -37,6 +37,26 @@ namespace Network
 		}
 	}
 
+	Network::MessageID_t Network::BaseConnection::Peek()
+	{
+		return myReceivedMessages.Peek();
+	}
+
+	bool Network::BaseConnection::ReadNextMessage(NetMessage& aMsg)
+	{
+		if (myReceivedMessages.Peek() != eNetMessageID::eNETMESSAGE_NONE)
+		{
+			myReceivedMessages.Dequeue(aMsg);
+			return true;
+		}
+		return false;
+	}
+
+	void BaseConnection::ClearMessages()
+	{
+		myReceivedMessages.Clear();
+	}
+
 	void BaseConnection::UpdateReliableMessageQueue()
 	{
 		myReliableNetMessageQueue.Send(mySocket);

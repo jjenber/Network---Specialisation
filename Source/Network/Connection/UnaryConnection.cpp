@@ -3,21 +3,6 @@
 #include "Timer\Timer.h"
 #include <iostream>
 
-Network::MessageID_t Network::UnaryConnection::Peek()
-{
-	return myReceivedMessages.Peek();
-}
-
-bool Network::UnaryConnection::ReadNextMessage(NetMessage& aMsg)
-{
-	if (myReceivedMessages.Peek() != eNetMessageID::eNETMESSAGE_NONE)
-	{
-		myReceivedMessages.Dequeue(aMsg);
-		return true;
-	}
-	return false;
-}
-
 void Network::UnaryConnection::OnReceivedMessage(char aBuffer[Constants::MAX_BUFFER_SIZE], const Network::Address& aFromAddress)
 {
 	myReceivedMessages.EnqueueReceivedBuffer(aBuffer);

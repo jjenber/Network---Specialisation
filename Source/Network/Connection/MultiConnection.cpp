@@ -8,11 +8,12 @@ Network::MultiConnection::MultiConnection() :
 {
 }
 
-void Network::MultiConnection::Init(size_t aMaxConnected, MessageID_t aHandshakeID, NetMessageCallback_t aCallback)
+void Network::MultiConnection::Init(size_t aMaxConnected, MessageID_t aHandshakeID, OnConnectionCallback_t aOnConnectionCallback)
 {
 	SetMaxConnections(aMaxConnected);
 	SetHandshakeID(aHandshakeID);
-	SetReceiveMessageCallback(aCallback);
+	SetOnConnectionCallback(aOnConnectionCallback);
+	mySocket.SetBlocking(false);
 }
 
 bool Network::MultiConnection::Bind(const Address& aAddress)
@@ -36,24 +37,20 @@ void Network::MultiConnection::SetHandshakeID(MessageID_t aHandshakeID)
 	myHandshakeID = aHandshakeID;
 }
 
+void Network::MultiConnection::SetOnConnectionCallback(OnConnectionCallback_t aOnConnectionCallback)
+{
+	myOnConnectionCallback = aOnConnectionCallback;
+}
+
 void Network::MultiConnection::OnReceivedMessage(char recvBuffer[Constants::MAX_BUFFER_SIZE], const Address& aAddress)
 {
 	myReceivedMessages.EnqueueReceivedBuffer(recvBuffer);
 
-	while (!myReceivedMessages.Empty())
+	MessageID_t id = myReceivedMessages.Peek();
+	if (id == myHandshakeID)
 	{
-		MessageID_t id = myReceivedMessages.Peek();
 		int connectionSlot = GetConnectionSlot(aAddress);
-		if (id == myHandshakeID)
-		{
-			HandleHandshakeMessage(connectionSlot, aAddress);
-		}
-		else
-		{
-			NetMessage msg;
-			myReceivedMessages.Dequeue(msg);
-			myCallback(recvBuffer);
-		}
+		HandleHandshakeMessage(connectionSlot, aAddress);
 	}
 }
 void Network::MultiConnection::EstablishNewConnection(int aConnectionSlot, const Address& aAddress)
@@ -61,7 +58,10 @@ void Network::MultiConnection::EstablishNewConnection(int aConnectionSlot, const
 	myConnections[aConnectionSlot].myAddress = aAddress;
 	myConnections[aConnectionSlot].myConnectionStatus = eConnectionStatus::Connected;
 
-	std::cout << "Connection established at slot " << aConnectionSlot << std::endl;
+	if (myOnConnectionCallback)
+	{
+		myOnConnectionCallback(aAddress, aConnectionSlot);
+	}
 }
 
 void Network::MultiConnection::HandleHandshakeMessage(int connectionSlot, const Address& aAddress)

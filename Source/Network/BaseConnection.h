@@ -6,8 +6,6 @@
 
 namespace Network
 {
-	typedef std::function<void(char aData[Constants::MAX_BUFFER_SIZE])> NetMessageCallback_t;
-
 	class BaseConnection
 	{
 	public:
@@ -15,20 +13,22 @@ namespace Network
 		virtual ~BaseConnection() {}
 		
 		UDPSocket& GetSocket();
-		
-		inline void SetReceiveMessageCallback(NetMessageCallback_t aCallback) { myCallback = aCallback; }
 	
 		void Update();
+
+		MessageID_t Peek();
+		bool ReadNextMessage(NetMessage& aMsg);
+		void ClearMessages();
 
 	protected:
 		template<class NetMessageType>
 		void SendOrEnqueue(const NetMessageType& aNetMessage, const Address& aAddress);
 		
-
 		UDPSocket&				mySocket;
-		NetMessageCallback_t	myCallback;
+		NetMessageQueue<1024>	myReceivedMessages;
 	private:
 		virtual void OnReceivedMessage(char recvBuffer[Constants::MAX_BUFFER_SIZE], const Address& aAddress) = 0;
+
 		void UpdateReliableMessageQueue();
 
 		ReliableNetMessageQueue	myReliableNetMessageQueue;

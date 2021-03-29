@@ -1,8 +1,11 @@
 #pragma once
 #include <string>
 
+struct sockaddr_in;
+
 namespace Network
 {
+	
 	using ipaddress_t = IPADDRESS_TYPE;
 	class Address
 	{
@@ -36,7 +39,7 @@ namespace Network
 			uint32_t myIP;
 			uint8_t myIPBytes[4];
 		};
-		u_short myPort;
+		unsigned short myPort;
 		eType   myType;
 	};
 
@@ -50,7 +53,7 @@ namespace std
 		{
 			return 
 				( std::hash<uint32_t>()(address.GetIP())
-				^ (std::hash<u_short>()(address.GetPort()) << 1));
+				^ (std::hash<unsigned short>()(address.GetPort()) << 1));
 		}
 	};
 }

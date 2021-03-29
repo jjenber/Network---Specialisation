@@ -3,20 +3,15 @@
 #include "NetMessage\NetMessageQueue.hpp"
 #include "NetMessage\ReliableNetMessageQueue.h"
 #include "Connection\UnaryConnection.h"
-
-enum class eAreaServerStatus
-{
-	Shutdown,
-	Idling,
-	Loading,
-	Running,
-};
+#include "AreaServerStatus.h"
 
 class AreaServer
 {
 public:
 	AreaServer();
+	
 	bool Startup();
+
 	bool Update(const float aDeltatime);
 
 	inline Network::eConnectionStatus GetStatus() const { return myConnectionStatus; }
