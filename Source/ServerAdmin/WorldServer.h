@@ -26,10 +26,15 @@ public:
 
 private:
 	void HandleAreaServerMessages();
+	void OnAreaServerConnected(int aAreaServerID, const Network::Address& aAddress);
+
+	void DeployAreaServer(unsigned short aAreaServerID);
+
+	void SendRequestEntityStateRequests(const float aDeltatime);
 
 	std::array<AreaServerInstance, MAX_AREA_SERVERS> myInstances;
+
 	Network::MultiConnection myConnection;
-	Network::NetMessageQueue<1024> myAreaServerMessages;
 	double myTime = 0;
 
 	GameWorld myGameWorld;

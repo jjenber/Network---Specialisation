@@ -3,10 +3,7 @@
 
 void GameWorld::Init()
 {
-	for (int i = 0; i < myRegions.size(); i++)
-	{
-		myRegions[i].myIndex = i;
-	}
+
 }
 
 void GameWorld::InstantiateEntities(const int aEntityCount, std::vector<entt::entity>& aUniqueIDs)
@@ -16,4 +13,16 @@ void GameWorld::InstantiateEntities(const int aEntityCount, std::vector<entt::en
 	{
 		aUniqueIDs.push_back(myWorldRegistry.create());
 	}
+}
+
+int GameWorld::GetUnassignedRegionIndex() const
+{
+	for (int i = 0; i < REGION_COUNT; i++)
+	{
+		if (myRegions[i].myAreaServerSlot == -1)
+		{
+			return i;
+		}
+	}
+	return -1;
 }

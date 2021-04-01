@@ -16,17 +16,17 @@ namespace Network
 	private:
 		void OnReceivedMessage(char aBuffer[Constants::MAX_BUFFER_SIZE], const Network::Address& aFromAddress);
 
-		eConnectionStatus		myConnectionStatus;
-		Address					myConnectedAddress;
-		Address					myAddress;
-		int						mySlot;
+		eConnectionStatus	myConnectionStatus;
+		Address				myConnectedAddress;
+		Address				myAddress;
+		ClientSlot_t		mySlot;
 	};
 
 	template<class NetMessageType>
 	inline void UnaryConnection::Send(const NetMessageType& aNetMessage)
 	{
 		static_assert(std::is_base_of_v<NetMessage, NetMessageType>, "NetMessageType must derive from NetMessage");
-		static_cast<NetMessage&>(aNetMessage).mySenderID = mySlot;
+		((NetMessage&)(aNetMessage)).mySenderID = mySlot;
 		SendOrEnqueue(aNetMessage, myConnectedAddress);
 	}
 }

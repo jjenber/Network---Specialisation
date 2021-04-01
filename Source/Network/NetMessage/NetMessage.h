@@ -3,6 +3,7 @@
 #include <string>
 #include <limits>
 #include <cassert>
+#include <iostream>
 
 #pragma warning ( disable : 26812 )
 
@@ -17,7 +18,7 @@ namespace Network
 
 	using MessageID_t  = NET_MSG_TYPE;
 	using HeaderSize_t = NET_MSG_HEADER_SIZE_TYPE;
-	using ClientSlot_t = NET_CLIENT_SLOT_TYPE;
+	typedef NET_CLIENT_SLOT_TYPE ClientSlot_t;
 
 	enum eNetMessageID : MessageID_t
 	{
@@ -33,8 +34,10 @@ namespace Network
 		eNETMESSAGE_RELIABLE_ID = 126,
 		eNETMESSAGE_R_HANDSHAKE_RESPONSE,
 		eNETMESSAGE_R_AS_DEPLOY,
-		eNETMESSAGE_R_AS_STATUS_LOADING,
-		eNETMESSAGE_R_AS_STATUS_RUNNING,
+		eNETMESSAGE_R_AS_STATUS,
+		eNETMESSAGE_R_AS_REQUEST_IDS,
+		eNETMESSAGE_R_AS_REQUEST_IDS_RESPONSE,
+		eNETMESSAGE_R_AS_REQUEST_ENTITY_STATES,
 		eNETMESSAGE_R_DISCONNECT,
 	};
 
@@ -117,8 +120,63 @@ namespace Network
 			mySize = GetSizeOfMessage<ReliableNetMessage>();
 			assert(mySize == 6);
 		}
+		virtual ~ReliableNetMessage() {};
 		unsigned short mySequenceNr;
 	};
 
+	class DeployAreaServer : public ReliableNetMessage
+	{
+		friend class ReliableNetMessageQueue;
+	public:
+		DeployAreaServer(unsigned char aRegionID = UCHAR_MAX)
+			: ReliableNetMessage(eNETMESSAGE_R_AS_DEPLOY), myRegionID(aRegionID) {
+			mySize = GetSizeOfMessage<DeployAreaServer>();
+		};
+		unsigned char myRegionID;
+	};
+
+	class RequestUniqueIDs : public ReliableNetMessage
+	{
+		friend class ReliableNetMessageQueue;
+	public:
+		static constexpr size_t MaxCount = 50;
+
+		RequestUniqueIDs(unsigned char aCount = 0)
+			: ReliableNetMessage(eNETMESSAGE_R_AS_REQUEST_IDS), myCount(aCount) {
+			SetCount(aCount);
+		};
+		void SetCount(unsigned char aCount)
+		{
+			myCount = aCount;
+			mySize = GetSizeOfMessage<RequestUniqueIDs>() - ((size_t(MaxCount) - aCount) * sizeof(myLocalIDs[0]));
+		};
+
+		unsigned char myCount;
+		uint32_t myLocalIDs[MaxCount]{};
+	};
+
+	class ResponseUniqueIDs : public ReliableNetMessage
+	{
+		friend class ReliableNetMessageQueue;
+	public:
+		ResponseUniqueIDs(unsigned char aCount)
+			: ReliableNetMessage(eNETMESSAGE_R_AS_REQUEST_IDS_RESPONSE), myCount(aCount) {
+			mySize = GetSizeOfMessage<ResponseUniqueIDs>() - ((size_t(100) - (aCount * 2)) * sizeof(myMappedIDs[0]));
+		};
+
+		unsigned char myCount;
+		/// Even: local, Odd: unique
+		uint32_t myMappedIDs[100]{};
+	};
+
+	class AreaServerStatus : public ReliableNetMessage
+	{
+		friend class ReliableNetMessageQueue;
+	public:
+		AreaServerStatus(unsigned char aStatus = UCHAR_MAX) : ReliableNetMessage(eNETMESSAGE_R_AS_STATUS), myStatus(aStatus) {
+			mySize = GetSizeOfMessage<AreaServerStatus>();
+		};
+		unsigned char myStatus;
+	};
 #pragma pack(pop)
 }

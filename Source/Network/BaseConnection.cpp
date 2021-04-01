@@ -30,6 +30,12 @@ namespace Network
 				memcpy(&msg.myMessageID, recvBuf + 1, msg.mySize);
 				myReliableNetMessageQueue.RemoveMessage(msg.mySequenceNr);
 			}
+			else if (msgID > eNETMESSAGE_RELIABLE_ID)
+			{
+				myReceivedMessages.EnqueueReceivedBuffer(recvBuf);
+				AcknowledgementMessage ack(myReceivedMessages.Peek(), myReceivedMessages.PeekReliableSequence());
+				mySocket.Send(ack, fromAddress);
+			}
 			else
 			{
 				OnReceivedMessage(recvBuf, fromAddress);
@@ -60,6 +66,5 @@ namespace Network
 	void BaseConnection::UpdateReliableMessageQueue()
 	{
 		myReliableNetMessageQueue.Send(mySocket);
-		myReliableNetMessageQueue.GetTimedOutMessages().clear();
 	}
 }

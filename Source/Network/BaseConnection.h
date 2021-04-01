@@ -19,10 +19,10 @@ namespace Network
 		MessageID_t Peek();
 		bool ReadNextMessage(NetMessage& aMsg);
 		void ClearMessages();
-
+		bool HasMessages() const { return !myReceivedMessages.Empty(); }
 	protected:
 		template<class NetMessageType>
-		void SendOrEnqueue(const NetMessageType& aNetMessage, const Address& aAddress);
+		void SendOrEnqueue(NetMessageType& aNetMessage, const Address& aAddress);
 		
 		UDPSocket&				mySocket;
 		NetMessageQueue<1024>	myReceivedMessages;
@@ -35,7 +35,7 @@ namespace Network
 	};
 
 	template<class NetMessageType>
-	inline void BaseConnection::SendOrEnqueue(const NetMessageType& aNetMessage, const Address& aAddress)
+	inline void BaseConnection::SendOrEnqueue(NetMessageType& aNetMessage, const Address& aAddress)
 	{
 		static_assert(std::is_base_of_v<NetMessage, NetMessageType>, "NetMessageType must derive from NetMessage");
 		if constexpr (std::is_base_of_v<ReliableNetMessage, NetMessageType>)

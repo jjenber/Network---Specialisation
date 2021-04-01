@@ -13,11 +13,10 @@ namespace Network
 	public:
 		template<class T>
 		unsigned short Enqueue(T& aMessage, const Address& aDestinationAddress, int aResendAttempts, float aResendWaitTime);
+		
 		void Send(UDPSocket& aSocket);
-		std::shared_ptr<ReliableNetMessage> RemoveMessage(unsigned int aSequence);
-
+		void RemoveMessage(unsigned int aSequence);
 		void Clear();
-		std::vector<ReliableNetMessage>& GetTimedOutMessages() { return myTimedOutMessages; }
 
 	private:
 		
@@ -25,12 +24,14 @@ namespace Network
 		struct ReliableMessageQueueItem
 		{
 			ReliableMessageQueueItem(int aResendAttempts, float aResendWaitTime)
-				: myResendAttempts(aResendAttempts), myResendTimer(aResendWaitTime), myResendWaitTime(aResendWaitTime), myDestinationAddress() {};
+				: myResendAttempts(aResendAttempts), myResendTimer(aResendWaitTime), myResendWaitTime(aResendWaitTime), myDestinationAddress(), myMessage(nullptr) {};
 
+			std::function<void()> myDeleter;
 			std::chrono::steady_clock::time_point myTimestamp;
-			std::shared_ptr<ReliableNetMessage> myMessage;
+			void* myMessage;
+			int myMessageSize = 0;
 			Address myDestinationAddress;
-			
+			 
 			float myResendTimer;
 			float myResendWaitTime;
 			int myResendAttempts;
@@ -38,7 +39,6 @@ namespace Network
 		};
 
 		std::vector<ReliableMessageQueueItem> myQueueItems;
-		std::vector<ReliableNetMessage> myTimedOutMessages;
 		unsigned short mySequenceNr = 0;
 	};
 
@@ -46,14 +46,19 @@ namespace Network
 	unsigned short ReliableNetMessageQueue::Enqueue(T& aMessage, const Address& aDestinationAddress, int aResendAttempts, float aResendWaitTime)
 	{
 		static_assert(std::is_base_of_v<ReliableNetMessage, T>, "T must derive from ReliableNetMessage");
+		T* copy = new T(aMessage);
 
+		ReliableNetMessage* header = (ReliableNetMessage*)(copy);
+		header->mySequenceNr       = mySequenceNr;
+		
 		ReliableMessageQueueItem item(aResendAttempts, aResendWaitTime);
-		item.myMessage = std::make_shared<T>(aMessage);
-		item.myMessage->mySize = sizeof(T) - sizeof(void*);
-		item.myMessage->mySequenceNr = mySequenceNr;
+
+		item.myDeleter            = [copy] { delete copy; };
+		item.myMessage            = (void*)copy;
+		item.myTimestamp          = std::chrono::steady_clock::now();
+		item.mySequenceNr         = mySequenceNr++;
 		item.myDestinationAddress = aDestinationAddress;
-		item.myTimestamp = std::chrono::steady_clock::now();
-		item.mySequenceNr = mySequenceNr++;
+		
 		myQueueItems.push_back(item);
 		return item.mySequenceNr;
 	}

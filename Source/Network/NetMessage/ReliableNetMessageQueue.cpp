@@ -7,6 +7,8 @@ namespace Network
 	{
 		using namespace std::literals;
 		char sendBuffer[Constants::MAX_BUFFER_SIZE]{};
+		ZeroMemory(sendBuffer, Constants::MAX_BUFFER_SIZE);
+		
 		// Message count
 		sendBuffer[0] = 1;
 
@@ -15,7 +17,7 @@ namespace Network
 		auto now = std::chrono::steady_clock::now();
 		for (int i = 0; i < myQueueItems.size(); i++)
 		{
-			ReliableMessageQueueItem& item = myQueueItems[i];
+			auto& item = myQueueItems[i];
 			if (item.myResendAttempts <= 0)
 			{
 				timedOutindices.push_back(i);
@@ -29,10 +31,9 @@ namespace Network
 				item.myResendAttempts--;
 
 				// Copy over the message and offset for the count.
-				memcpy(sendBuffer + 1, &item.myMessage->myMessageID, item.myMessage->mySize);
-				aSocket.Send(sendBuffer, item.myMessage->mySize, item.myDestinationAddress);
-
-				std::cout << "Sending reliable message." << std::endl;
+				ReliableNetMessage* itemMsg = static_cast<ReliableNetMessage*>(item.myMessage);
+				memcpy(sendBuffer + 1, &itemMsg->myMessageID, itemMsg->mySize);
+				aSocket.Send(sendBuffer, itemMsg->mySize + 1, item.myDestinationAddress);
 			}
 		}
 
@@ -40,31 +41,26 @@ namespace Network
 		for (int i = static_cast<int>(timedOutindices.size()) - 1; i >= 0; i--)
 		{
 			int indexToRemove = timedOutindices[i];
-			
-			myTimedOutMessages.push_back(*myQueueItems[indexToRemove].myMessage);
-			
+			myQueueItems[indexToRemove].myDeleter();
 			myQueueItems[indexToRemove] = myQueueItems.back();
 			myQueueItems.pop_back();
 		}
 	}
 
-	std::shared_ptr<ReliableNetMessage> ReliableNetMessageQueue::RemoveMessage(unsigned int aSequence)
+	void ReliableNetMessageQueue::RemoveMessage(unsigned int aSequence)
 	{
-		std::shared_ptr<ReliableNetMessage> netMessage = nullptr;
 		for (size_t i = 0; i < myQueueItems.size(); i++)
 		{
 			if (myQueueItems[i].mySequenceNr == aSequence)
 			{
-				netMessage = myQueueItems[i].myMessage;
+				myQueueItems[i].myDeleter();
 				myQueueItems.erase(myQueueItems.begin() + i);
 			}
 		}
-		return netMessage;
 	}
 
 	inline void ReliableNetMessageQueue::Clear()
 	{
 		myQueueItems.clear();
-		myTimedOutMessages.clear();
 	}
 }

@@ -4,6 +4,7 @@
 #include "NetMessage\ReliableNetMessageQueue.h"
 #include "Connection\UnaryConnection.h"
 #include "AreaServerStatus.h"
+#include "../Game/GameArea.h"
 
 class AreaServer
 {
@@ -16,11 +17,15 @@ public:
 
 	inline Network::eConnectionStatus GetStatus() const { return myConnectionStatus; }
 private:
-
 	void ReadWorldServerMessage(Network::MessageID_t aMessageID);
+
+	void SendIDRequests();
 
 	uint8_t myServerID = UINT8_MAX;
 	Network::UDPSocket mySocket;
+
+	// Game
+	GameArea myGame;
 
 	// World Server
 	Network::UnaryConnection myWorldServerConnection;

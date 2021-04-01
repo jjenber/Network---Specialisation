@@ -7,6 +7,9 @@
     <Filter Include="Entt">
       <UniqueIdentifier>{b22e1f15-90c2-4a8b-83a8-d8a67256cad9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Components">
+      <UniqueIdentifier>{6855c6a7-055b-4b67-944d-46a860aede3f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -20,11 +23,21 @@
     </ClInclude>
     <ClInclude Include="GameWorld.h" />
     <ClInclude Include="GameDefines.h" />
+    <ClInclude Include="GameArea.h" />
+    <ClInclude Include="Components\Transform.hpp">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Game.h" />
+    <ClInclude Include="Components\Network.hpp">
+      <Filter>Components</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
       <Filter>Precompiled</Filter>
     </ClCompile>
     <ClCompile Include="GameWorld.cpp" />
+    <ClCompile Include="GameArea.cpp" />
+    <ClCompile Include="Game.cpp" />
   </ItemGroup>
 </Project>

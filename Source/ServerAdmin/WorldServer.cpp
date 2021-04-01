@@ -5,19 +5,14 @@
 
 void WorldServer::Startup()
 {
-	WSADATA wsaData;
-	int result = WSAStartup(MAKEWORD(2, 2), &wsaData);
-	if (result != NO_ERROR)
-	{
-		std::cout << "WSAStartup failed with error: " << WSAGetLastError() << std::endl;
-	}
-
 	myTime = 0;
-
-	myConnection.Init(16, Network::eNetMessageID::eNETMESSAGE_AS_HANDSHAKE, [&](const Network::Address& aAddress, unsigned short aConnectionSlot)
-		{
-			std::cout << "Connection established at slot " << aConnectionSlot << std::endl;
-		});
+	myConnection.Init(
+		MAX_AREA_SERVERS, 
+		Network::eNetMessageID::eNETMESSAGE_AS_HANDSHAKE, 
+		[&](const Network::Address& aAddress, unsigned short aConnectionSlot)
+			{
+				OnAreaServerConnected(aConnectionSlot, aAddress);
+			});
 	
 	
 	if (myConnection.Bind("127.0.0.1", Network::Constants::DEFAULT_PORT))
@@ -59,11 +54,85 @@ void WorldServer::InstantiateAreaServers()
 void WorldServer::Update(const float aDeltatime)
 {
 	myConnection.Update();
+	while (myConnection.HasMessages())
+	{
+		HandleAreaServerMessages();
+	}
 	myConnection.ClearMessages();
+
+	SendRequestEntityStateRequests(aDeltatime);
 }
 
 void WorldServer::HandleAreaServerMessages()
 {
-	
+	Network::MessageID_t id = myConnection.Peek();
+	switch (id)
+	{
+	case Network::eNETMESSAGE_R_AS_STATUS:
+	{
+		Network::AreaServerStatus msg;
+		myConnection.ReadNextMessage(msg);
+		myInstances[msg.mySenderID].myStatus = static_cast<eAreaServerStatus>(msg.myStatus);
 
+		std::cout << "Area Server [" << msg.mySenderID << "] status: " << (int)msg.myStatus << std::endl;
+		break;
+	}
+	case Network::eNETMESSAGE_R_AS_REQUEST_IDS:
+	{
+		Network::RequestUniqueIDs msg;
+		myConnection.ReadNextMessage(msg);
+		
+		std::cout << "Received request for " << (int)msg.myCount << " ids." << std::endl;
+
+		std::vector<entt::entity> entities;
+		myGameWorld.InstantiateEntities(msg.myCount, entities);
+		Network::ResponseUniqueIDs response(msg.myCount);
+		
+		for (int mapItr = 0, uniqueIDItr = 0; uniqueIDItr < msg.myCount; mapItr += 2, uniqueIDItr++)
+		{
+			response.myMappedIDs[mapItr] = msg.myLocalIDs[uniqueIDItr];
+			response.myMappedIDs[mapItr + 1] = static_cast<uint32_t>(entities[uniqueIDItr]);
+		}
+
+		myConnection.Send(response, myInstances[msg.mySenderID].myAddress);
+		break;
+	}
+	default:
+		std::cout << (int)id << " unhandled message from area server" << std::endl;
+		break;
+	}
+}
+
+void WorldServer::OnAreaServerConnected(int aAreaServerID, const Network::Address& aAddress)
+{
+	myInstances[aAreaServerID].myAddress = aAddress;
+	DeployAreaServer(aAreaServerID);
+}
+
+void WorldServer::DeployAreaServer(unsigned short aAreaServerID)
+{
+	int region = myGameWorld.GetUnassignedRegionIndex();
+	myInstances[aAreaServerID].myRegions.push_back(region);
+
+	Network::DeployAreaServer message(region);
+	myConnection.Send(message, myInstances[aAreaServerID].myAddress);
+	std::cout << "Deploying Region " << region << " on AreaServer " << aAreaServerID << std::endl;
+}
+
+void WorldServer::SendRequestEntityStateRequests(const float aDeltatime)
+{
+	static float aTimer = 0.f;
+	aTimer += aDeltatime;
+	if (aTimer > 1.5f)
+	{
+		Network::ReliableNetMessage msg(Network::eNETMESSAGE_R_AS_REQUEST_ENTITY_STATES);
+		for (const auto& instance : myInstances)
+		{
+			if (instance.myStatus == eAreaServerStatus::Running)
+			{
+				myConnection.Send(msg, instance.myAddress);
+			}
+		}
+		aTimer = 0.f;
+	}
 }

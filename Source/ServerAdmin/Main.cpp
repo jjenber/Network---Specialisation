@@ -116,7 +116,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		worldServer.Update(timer.Update());
 		ImGui::End();
 
-
 		ImGui::Render();
 		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 		dx11.EndFrame();
