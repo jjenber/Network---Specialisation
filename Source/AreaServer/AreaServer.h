@@ -32,7 +32,6 @@ private:
 	Network::Address myWorldServerAddress;
 	Network::eConnectionStatus myConnectionStatus;
 
-	// Clients
 	eAreaServerStatus myStatus;
 	bool myIsRunning;
 };

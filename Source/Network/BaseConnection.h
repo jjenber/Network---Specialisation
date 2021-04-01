@@ -14,7 +14,7 @@ namespace Network
 		
 		UDPSocket& GetSocket();
 	
-		void Update();
+		void Update(float aDeltatime);
 
 		MessageID_t Peek();
 		bool ReadNextMessage(NetMessage& aMsg);
@@ -25,11 +25,12 @@ namespace Network
 		void SendOrEnqueue(NetMessageType& aNetMessage, const Address& aAddress);
 		
 		UDPSocket&				mySocket;
-		NetMessageQueue<1024>	myReceivedMessages;
+		NetMessageQueue<2048>	myReceivedMessages;
+
 	private:
 		virtual void OnReceivedMessage(char recvBuffer[Constants::MAX_BUFFER_SIZE], const Address& aAddress) = 0;
 
-		void UpdateReliableMessageQueue();
+		void UpdateReliableMessageQueue(float aDeltatime);
 
 		ReliableNetMessageQueue	myReliableNetMessageQueue;
 	};

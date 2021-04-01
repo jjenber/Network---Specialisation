@@ -17,7 +17,8 @@ namespace Network
 		void Send(UDPSocket& aSocket);
 		void RemoveMessage(unsigned int aSequence);
 		void Clear();
-
+		bool HasReceivedPreviously(unsigned short aSequenceNr);
+		void ClearReceivedSequenceCache(float aDeltatime, float aTimeBeforeRemove);
 	private:
 		
 		// Wraps a reliable message with meta data to keep track of resends.
@@ -31,7 +32,7 @@ namespace Network
 			void* myMessage;
 			int myMessageSize = 0;
 			Address myDestinationAddress;
-			 
+
 			float myResendTimer;
 			float myResendWaitTime;
 			int myResendAttempts;
@@ -39,6 +40,8 @@ namespace Network
 		};
 
 		std::vector<ReliableMessageQueueItem> myQueueItems;
+		std::unordered_map<unsigned short, float> myAckTimestamps;
+
 		unsigned short mySequenceNr = 0;
 	};
 

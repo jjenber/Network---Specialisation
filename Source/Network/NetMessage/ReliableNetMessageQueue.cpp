@@ -63,4 +63,29 @@ namespace Network
 	{
 		myQueueItems.clear();
 	}
+
+	bool ReliableNetMessageQueue::HasReceivedPreviously(unsigned short aSequenceNr)
+	{
+		bool alreadyReceived = myAckTimestamps.find(aSequenceNr) != myAckTimestamps.end();
+		if (!alreadyReceived)
+		{
+			myAckTimestamps[aSequenceNr] = 0.f; 
+		}
+		return alreadyReceived;
+	}
+	void ReliableNetMessageQueue::ClearReceivedSequenceCache(float aDeltatime, float aTimeBeforeRemove)
+	{
+		std::vector<unsigned short> timedOut;
+		for (auto&& [seq, timer] : myAckTimestamps)
+		{
+			if (timer >= aTimeBeforeRemove)
+			{
+				timedOut.push_back(seq);
+			}
+		}
+		for (const auto& seq : timedOut)
+		{
+			myAckTimestamps.erase(seq);
+		}
+	}
 }

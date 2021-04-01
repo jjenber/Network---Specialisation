@@ -14,9 +14,9 @@ namespace Network
 		return mySocket;
 	}
 
-	void BaseConnection::Update()
+	void BaseConnection::Update(float aDeltatime)
 	{
-		UpdateReliableMessageQueue();
+		UpdateReliableMessageQueue(aDeltatime);
 
 		Address fromAddress;
 		char recvBuf[Constants::MAX_BUFFER_SIZE]{};
@@ -32,9 +32,13 @@ namespace Network
 			}
 			else if (msgID > eNETMESSAGE_RELIABLE_ID)
 			{
-				myReceivedMessages.EnqueueReceivedBuffer(recvBuf);
 				AcknowledgementMessage ack(myReceivedMessages.Peek(), myReceivedMessages.PeekReliableSequence());
 				mySocket.Send(ack, fromAddress);
+				
+				if (!myReliableNetMessageQueue.HasReceivedPreviously(ack.mySequenceNr))
+				{
+					myReceivedMessages.EnqueueReceivedBuffer(recvBuf);
+				}
 			}
 			else
 			{
@@ -63,8 +67,10 @@ namespace Network
 		myReceivedMessages.Clear();
 	}
 
-	void BaseConnection::UpdateReliableMessageQueue()
+	void BaseConnection::UpdateReliableMessageQueue(float aDeltatime)
 	{
 		myReliableNetMessageQueue.Send(mySocket);
+		myReliableNetMessageQueue.ClearReceivedSequenceCache(aDeltatime, 20.f);
+
 	}
 }

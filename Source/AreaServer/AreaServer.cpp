@@ -22,7 +22,7 @@ bool AreaServer::Startup()
 
 bool AreaServer::Update(const float aDeltatime)
 {
-	myWorldServerConnection.Update();
+	myWorldServerConnection.Update(aDeltatime);
 
 	while (myWorldServerConnection.HasMessages())
 	{

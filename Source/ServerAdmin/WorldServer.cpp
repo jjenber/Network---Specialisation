@@ -53,7 +53,7 @@ void WorldServer::InstantiateAreaServers()
 
 void WorldServer::Update(const float aDeltatime)
 {
-	myConnection.Update();
+	myConnection.Update(aDeltatime);
 	while (myConnection.HasMessages())
 	{
 		HandleAreaServerMessages();
@@ -75,6 +75,7 @@ void WorldServer::HandleAreaServerMessages()
 		myInstances[msg.mySenderID].myStatus = static_cast<eAreaServerStatus>(msg.myStatus);
 
 		std::cout << "Area Server [" << msg.mySenderID << "] status: " << (int)msg.myStatus << std::endl;
+
 		break;
 	}
 	case Network::eNETMESSAGE_R_AS_REQUEST_IDS:
@@ -90,7 +91,7 @@ void WorldServer::HandleAreaServerMessages()
 		
 		for (int mapItr = 0, uniqueIDItr = 0; uniqueIDItr < msg.myCount; mapItr += 2, uniqueIDItr++)
 		{
-			response.myMappedIDs[mapItr] = msg.myLocalIDs[uniqueIDItr];
+			response.myMappedIDs[mapItr]     = msg.myLocalIDs[uniqueIDItr];
 			response.myMappedIDs[mapItr + 1] = static_cast<uint32_t>(entities[uniqueIDItr]);
 		}
 
