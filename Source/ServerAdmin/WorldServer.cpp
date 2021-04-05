@@ -20,6 +20,7 @@ void WorldServer::Startup()
 		myConnection.GetSocket().SetBlocking(false);
 		std::cout << "Server is listening at " << myConnection.GetSocket().GetBoundAddress().ToString() << std::endl;
 	}
+	
 }
 
 void WorldServer::InstantiateAreaServers()
@@ -53,6 +54,7 @@ void WorldServer::InstantiateAreaServers()
 
 void WorldServer::Update(const float aDeltatime)
 {
+	myTime += aDeltatime;
 	myConnection.Update(aDeltatime);
 	while (myConnection.HasMessages())
 	{
@@ -157,18 +159,14 @@ void WorldServer::DeployAreaServer(unsigned short aAreaServerID)
 
 void WorldServer::SendRequestEntityStateRequests(const float aDeltatime)
 {
-	static float aTimer = 0.f;
-	aTimer += aDeltatime;
-	if (aTimer > 1.5f)
+	Network::NetMessage msg(Network::eNETMESSAGE_AS_REQUEST_ENTITY_STATES);
+	for (auto& instance : myAreaServerInstances)
 	{
-		Network::NetMessage msg(Network::eNETMESSAGE_AS_REQUEST_ENTITY_STATES);
-		for (const auto& instance : myAreaServerInstances)
+		if (instance.myStatus == eAreaServerStatus::Running && myTime - instance.myLastMessage > 1.5f)
 		{
-			if (instance.myStatus == eAreaServerStatus::Running)
-			{
-				myConnection.Send(msg, instance.myAddress);
-			}
+			instance.myLastMessage = myTime;
+			myConnection.Send(msg, instance.myAddress);
+			
 		}
-		aTimer = 0.f;
 	}
 }

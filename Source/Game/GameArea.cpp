@@ -13,17 +13,15 @@ void GameArea::Init(int aRegionID)
 
 	myRegion = aRegionID;
 	myRegistry.prepare<components::UniqueID>();
-	for (int z = 0; z < Random::Range(1, 8); z++)
+
+	for (int i = 0; i < Random::Range(100, 200); i++)
 	{
-		for (int x = 0; x < Random::Range(2, 10); x ++)
+		const float rX = Random::Range(0.f, REGION_SIZEF);
+		const float rZ = Random::Range(0.f, REGION_SIZEF);
+		entt::entity entity = InstantiateEntity(cu::Vector3f(rX, 0, rZ));
+		if (i % 10 == 0)
 		{
-			const float rX = Random::Range(0.f, REGION_SIZEF);
-			const float rZ = Random::Range(0.f, REGION_SIZEF);
-			entt::entity entity = InstantiateEntity(cu::Vector3f(rX, 0, rZ));
-			if (x % 5 == 0)
-			{
-				myRegistry.emplace<components::Velocity>(entity, CommonUtilities::Vector3f(rX, 0, rZ).GetNormalized() * 20.f);
-			}
+			myRegistry.emplace<components::Velocity>(entity, CommonUtilities::Vector3f(rX, 0, rZ).GetNormalized() * 20.f);
 		}
 	}
 }

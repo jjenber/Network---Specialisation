@@ -1,12 +1,10 @@
 #pragma once
-#include "NetMessage\NetMessageQueue.hpp"
-#include "NetMessage\ReliableNetMessageQueue.h"
-#include "Connection\MultiConnection.h"
+
+#include "Connection/MultiConnection.h"
 #include "../AreaServer/AreaServerStatus.h"
 #include "../Game/GameWorld.h"
-#include <bitset>
 
-constexpr auto MAX_AREA_SERVERS = 8;
+constexpr auto MAX_AREA_SERVERS = 16;
 
 struct AreaServerInstance
 {
@@ -14,6 +12,7 @@ struct AreaServerInstance
 	eAreaServerStatus myStatus = eAreaServerStatus::Shutdown;
 	std::vector<int> myRegions;
 	std::vector<entt::entity> myEntities;
+	double myLastMessage = 0;
 };
 
 class WorldServer

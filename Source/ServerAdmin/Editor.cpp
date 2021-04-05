@@ -182,7 +182,7 @@ void Editor::DrawRegions()
 				0.2f,
 				ImDrawFlags_RoundCornersAll);
 		}
-		ImVec2 topL = ImVec2((i % REGION_ROW_COL) * REGION_SIZE, (i / REGION_ROW_COL) * REGION_SIZE);
+		ImVec2 topL = ImVec2(static_cast<float>((i % REGION_ROW_COL)) * REGION_SIZE, static_cast<float>((i / REGION_ROW_COL)) * REGION_SIZE);
 		ImVec2 botR = ImVec2(topL.x + REGION_SIZE, topL.y + REGION_SIZE);
 		int alpha = 30;
 		ImU32 color = 
