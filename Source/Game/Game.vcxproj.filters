@@ -28,7 +28,10 @@
       <Filter>Components</Filter>
     </ClInclude>
     <ClInclude Include="Game.h" />
-    <ClInclude Include="Components\Network.hpp">
+    <ClInclude Include="Components\UniqueID.hpp">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Components\Velocity.hpp">
       <Filter>Components</Filter>
     </ClInclude>
   </ItemGroup>

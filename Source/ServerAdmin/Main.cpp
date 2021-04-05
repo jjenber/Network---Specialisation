@@ -9,6 +9,7 @@
 #include "Context\Context.h"
 #include "Timer\Timer.h"
 #include "WorldServer.h"
+#include "Editor.h"
 
 #include <string>
 #include <imgui.h>
@@ -71,7 +72,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	InitConsole();
 
 	DirectX11Framework dx11;
-	std::unique_ptr<Window> window = Window::Create(L"Server Admin", 200, 100, 800, 600);
+	std::shared_ptr<Window> window = Window::Create(L"Server Admin", 200, 100, 1200, 800);
 	dx11.Init(*window);
 
 	auto font = ImGui_LoadFont(fontAtlas, "segoeui.ttf", 18.0f);
@@ -80,11 +81,14 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	ImGui_ImplWin32_Init(window->GetHWND());
 	ImGui_ImplDX11_Init(dx11.GetDevice(), dx11.GetContext());
 	ImGui::StyleColorsDark();
-
+	ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+	
 	Network::Context context;
 	WorldServer worldServer;
 	worldServer.Startup();
 	//worldServer.InstantiateAreaServers();
+	Editor editor(worldServer);
+	editor.Init(window);
 
 	Timer timer;
 	bool run = true;
@@ -111,10 +115,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		ImGui_ImplWin32_NewFrame();
 		ImGui::NewFrame();
 
-		// Main update loop
-		ImGui::Begin("Main Server");
+		editor.Show();
+
 		worldServer.Update(timer.Update());
-		ImGui::End();
 
 		ImGui::Render();
 		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
@@ -132,5 +135,6 @@ void OnWindowResize(DirectX11Framework& aDirectX11Framework, Window& aWindow)
 {
 	RECT rect;
 	GetWindowRect(aWindow.GetHWND(), &rect);
-	aDirectX11Framework.UpdateResizeWindow(rect.right - rect.left, rect.bottom - rect.top);
+	aWindow.Resize(rect.right - rect.left, rect.bottom - rect.top);
+	aDirectX11Framework.UpdateResizeWindow(aWindow.GetWidth(), aWindow.GetHeight());
 }

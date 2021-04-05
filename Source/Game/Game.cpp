@@ -1,18 +1,23 @@
 #include "pch.h"
 #include "Game.h"
 #include "Components\Transform.hpp"
-#include "Components\Network.hpp"
+#include "Components\UniqueID.hpp"
 
-void Game::InstantiateEntity()
+entt::entity Game::InstantiateEntity()
 {
-	entt::entity entity = myRegistry.create();
-	myRegistry.emplace<components::Transform>(entity);
-	myRegistry.emplace<components::Network>(entity);
+	return InstantiateEntity(cu::Vector3f());
 }
 
-int Game::GetEntityCount() const
+entt::entity Game::InstantiateEntity(const cu::Vector3f& aPosition)
 {
-	return myRegistry.size<components::Network>();
+	entt::entity entity = myRegistry.create();
+	myRegistry.emplace<components::Transform>(entity).myPosition = aPosition;
+	return entity;
+}
+
+size_t Game::GetEntityCount() const
+{
+	return myRegistry.size<components::UniqueID>();
 }
 
 void Game::SetUniqueID(const entt::id_type aLocalID, const entt::id_type aUniqueID)
@@ -20,6 +25,6 @@ void Game::SetUniqueID(const entt::id_type aLocalID, const entt::id_type aUnique
 	entt::entity entity = entt::entity(aLocalID);
 	if (myRegistry.valid(entity))
 	{
-		myRegistry.emplace_or_replace<components::Network>(entity, aUniqueID);
+		myRegistry.emplace_or_replace<components::UniqueID>(entity, aUniqueID);
 	}
 }

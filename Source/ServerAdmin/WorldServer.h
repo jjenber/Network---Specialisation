@@ -13,6 +13,7 @@ struct AreaServerInstance
 	Network::Address myAddress;
 	eAreaServerStatus myStatus = eAreaServerStatus::Shutdown;
 	std::vector<int> myRegions;
+	std::vector<entt::entity> myEntities;
 };
 
 class WorldServer
@@ -24,6 +25,9 @@ public:
 
 	void Update(const float aDeltatime);
 
+	const std::array<AreaServerInstance, MAX_AREA_SERVERS>& GetAreaServerInstanceArray() const { return myAreaServerInstances; }
+	const entt::registry& GetRegistry() const { return myGameWorld.GetRegistry(); }
+	bool CanStartAreaServer() const;
 private:
 	void HandleAreaServerMessages();
 	void OnAreaServerConnected(int aAreaServerID, const Network::Address& aAddress);
@@ -32,7 +36,7 @@ private:
 
 	void SendRequestEntityStateRequests(const float aDeltatime);
 
-	std::array<AreaServerInstance, MAX_AREA_SERVERS> myInstances;
+	std::array<AreaServerInstance, MAX_AREA_SERVERS> myAreaServerInstances;
 
 	Network::MultiConnection myConnection;
 	double myTime = 0;

@@ -1,6 +1,7 @@
 #pragma once
 #include <memory>
 #include <functional>
+#include <Windows.h>
 
 #define USER_EVENT_RESIZE WM_APP + 1
 
@@ -18,6 +19,7 @@ public:
 	unsigned int	GetWidth()     { return myWidth; };
 	unsigned int	GetHeight()    { return myHeight; };
 	
+	void			Resize(unsigned int aWidth, unsigned int aHeight);
 private:
 	static LRESULT CALLBACK WinProc(_In_ HWND hwnd, _In_ UINT uMsg, _In_ WPARAM wParam, _In_ LPARAM lParam);
 	

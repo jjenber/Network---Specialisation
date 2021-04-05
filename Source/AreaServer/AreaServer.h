@@ -20,6 +20,7 @@ private:
 	void ReadWorldServerMessage(Network::MessageID_t aMessageID);
 
 	void SendIDRequests();
+	void SendEntityStates();
 
 	uint8_t myServerID = UINT8_MAX;
 	Network::UDPSocket mySocket;

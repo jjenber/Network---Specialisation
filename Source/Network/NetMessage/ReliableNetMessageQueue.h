@@ -17,7 +17,7 @@ namespace Network
 		void Send(UDPSocket& aSocket);
 		void RemoveMessage(unsigned int aSequence);
 		void Clear();
-		bool HasReceivedPreviously(unsigned short aSequenceNr);
+		bool HasReceivedPreviously(const Address& aAddress, unsigned short aSequenceNr);
 		void ClearReceivedSequenceCache(float aDeltatime, float aTimeBeforeRemove);
 	private:
 		
@@ -40,8 +40,7 @@ namespace Network
 		};
 
 		std::vector<ReliableMessageQueueItem> myQueueItems;
-		std::unordered_map<unsigned short, float> myAckTimestamps;
-
+		std::unordered_map<std::string, std::unordered_map<unsigned short, float>> myAckedSequenceCache;
 		unsigned short mySequenceNr = 0;
 	};
 

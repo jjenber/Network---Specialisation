@@ -92,8 +92,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Components\Network.hpp" />
+    <ClInclude Include="Components\UniqueID.hpp" />
     <ClInclude Include="Components\Transform.hpp" />
+    <ClInclude Include="Components\Velocity.hpp" />
     <ClInclude Include="Entt\entt.hpp" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="Game.h" />

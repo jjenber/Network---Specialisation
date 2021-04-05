@@ -31,13 +31,15 @@ namespace Network
 		eNETMESSAGE_HEARTBEAT,
 		eNETMESSAGE_CHAT,
 
+		eNETMESSAGE_AS_REQUEST_ENTITY_STATES,
+		eNETMESSAGE_AS_RESPONSE_ENTITY_STATES,
+
 		eNETMESSAGE_RELIABLE_ID = 126,
 		eNETMESSAGE_R_HANDSHAKE_RESPONSE,
 		eNETMESSAGE_R_AS_DEPLOY,
 		eNETMESSAGE_R_AS_STATUS,
 		eNETMESSAGE_R_AS_REQUEST_IDS,
 		eNETMESSAGE_R_AS_REQUEST_IDS_RESPONSE,
-		eNETMESSAGE_R_AS_REQUEST_ENTITY_STATES,
 		eNETMESSAGE_R_DISCONNECT,
 	};
 
@@ -55,7 +57,7 @@ namespace Network
 		NetMessage() : NetMessage(eNETMESSAGE_NONE) {}
 		virtual ~NetMessage() {}
 
-		constexpr eNetMessageID GetMessageID() const { return myMessageID; }
+		eNetMessageID GetMessageID() const { return myMessageID; }
 
 		eNetMessageID myMessageID;
 		ClientSlot_t  mySenderID = (std::numeric_limits<ClientSlot_t>::max());
@@ -74,6 +76,32 @@ namespace Network
 		return sizeof(NetMessage) - sizeof(void*);
 	}
 
+	struct EntityState
+	{
+		EntityState() = default;
+		EntityState(float aX, float aZ, uint32_t aUniqueID) : myX(aX), myZ(aZ), myUniqueID(aUniqueID) {}
+		float myX;
+		float myZ;
+		uint32_t myUniqueID;
+	};
+	class EntityStatesMessage : public NetMessage
+	{
+	public:
+
+		static constexpr size_t MaxCount = Constants::MAX_MESSAGE_PAYLOAD_SIZE / sizeof(EntityState);
+
+		EntityStatesMessage(uint8_t aCount) : NetMessage(eNETMESSAGE_AS_RESPONSE_ENTITY_STATES), myCount(aCount)
+		{
+			SetCount(aCount);
+		};
+		void SetCount(uint8_t aCount)
+		{ 
+			myCount = aCount;
+			mySize = GetSizeOfMessage<EntityStatesMessage>() - ((size_t(MaxCount) - aCount) * sizeof(EntityState));
+		};
+		uint8_t myCount;
+		EntityState myData[MaxCount];
+	};
 
 	class HandshakeMessage : public NetMessage
 	{
@@ -128,11 +156,11 @@ namespace Network
 	{
 		friend class ReliableNetMessageQueue;
 	public:
-		DeployAreaServer(unsigned char aRegionID = UCHAR_MAX)
+		DeployAreaServer(uint8_t aRegionID = UCHAR_MAX)
 			: ReliableNetMessage(eNETMESSAGE_R_AS_DEPLOY), myRegionID(aRegionID) {
 			mySize = GetSizeOfMessage<DeployAreaServer>();
 		};
-		unsigned char myRegionID;
+		uint8_t myRegionID;
 	};
 
 	class RequestUniqueIDs : public ReliableNetMessage
@@ -145,13 +173,13 @@ namespace Network
 			: ReliableNetMessage(eNETMESSAGE_R_AS_REQUEST_IDS), myCount(aCount) {
 			SetCount(aCount);
 		};
-		void SetCount(unsigned char aCount)
+		void SetCount(uint8_t aCount)
 		{
 			myCount = aCount;
 			mySize = GetSizeOfMessage<RequestUniqueIDs>() - ((size_t(MaxCount) - aCount) * sizeof(myLocalIDs[0]));
 		};
 
-		unsigned char myCount;
+		uint8_t myCount;
 		uint32_t myLocalIDs[MaxCount]{};
 	};
 
@@ -164,7 +192,7 @@ namespace Network
 			mySize = GetSizeOfMessage<ResponseUniqueIDs>() - ((size_t(100) - (aCount * 2)) * sizeof(myMappedIDs[0]));
 		};
 
-		unsigned char myCount;
+		uint8_t myCount;
 		/// Even: local, Odd: unique
 		uint32_t myMappedIDs[100]{};
 	};
@@ -178,5 +206,6 @@ namespace Network
 		};
 		unsigned char myStatus;
 	};
+
 #pragma pack(pop)
 }

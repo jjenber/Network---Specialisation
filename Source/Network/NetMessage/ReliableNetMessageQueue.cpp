@@ -64,28 +64,32 @@ namespace Network
 		myQueueItems.clear();
 	}
 
-	bool ReliableNetMessageQueue::HasReceivedPreviously(unsigned short aSequenceNr)
+	bool ReliableNetMessageQueue::HasReceivedPreviously(const Address& aAddress, unsigned short aSequenceNr)
 	{
-		bool alreadyReceived = myAckTimestamps.find(aSequenceNr) != myAckTimestamps.end();
+		auto& ackTimestamps = myAckedSequenceCache[aAddress.ToString()];
+		bool alreadyReceived = ackTimestamps.find(aSequenceNr) != ackTimestamps.end();
 		if (!alreadyReceived)
 		{
-			myAckTimestamps[aSequenceNr] = 0.f; 
+			ackTimestamps[aSequenceNr] = 0.f;
 		}
 		return alreadyReceived;
 	}
 	void ReliableNetMessageQueue::ClearReceivedSequenceCache(float aDeltatime, float aTimeBeforeRemove)
 	{
-		std::vector<unsigned short> timedOut;
-		for (auto&& [seq, timer] : myAckTimestamps)
+		for (auto& [addr, timestamps] : myAckedSequenceCache)
 		{
-			if (timer >= aTimeBeforeRemove)
+			std::vector<unsigned short> timedOut;
+			for (auto&& [seq, timer] : timestamps)
 			{
-				timedOut.push_back(seq);
+				if (timer >= aTimeBeforeRemove)
+				{
+					timedOut.push_back(seq);
+				}
 			}
-		}
-		for (const auto& seq : timedOut)
-		{
-			myAckTimestamps.erase(seq);
+			for (const auto& seq : timedOut)
+			{
+				timestamps.erase(seq);
+			}
 		}
 	}
 }

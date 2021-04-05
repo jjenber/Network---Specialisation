@@ -20,10 +20,6 @@
 //   # binary_to_compressed_c.exe myfont.ttf MyFont > myfont.cpp
 //   # binary_to_compressed_c.exe -base85 myfont.ttf MyFont > myfont.cpp
 
-#pragma warning (disable : 4244)
-#pragma warning (disable : 26451)
-#pragma warning (disable : 6386)
-
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 #include <string.h>
@@ -84,11 +80,11 @@ bool binary_to_compressed_c(const char* filename, const char* symbol, bool use_b
     fclose(f);
 
     // Compress
-    int maxlen = size_t(data_sz) + 512 + (data_sz >> 2) + sizeof(int); // total guess
+    int maxlen = data_sz + 512 + (data_sz >> 2) + sizeof(int); // total guess
     char* compressed = use_compression ? new char[maxlen] : data;
     int compressed_sz = use_compression ? stb_compress((stb_uchar*)compressed, (stb_uchar*)data, data_sz) : data_sz;
     if (use_compression)
-        memset(compressed + compressed_sz, 0, size_t(maxlen) - compressed_sz);
+        memset(compressed + compressed_sz, 0, maxlen - compressed_sz);
 
     // Output as Base85 encoded
     FILE* out = stdout;

@@ -100,7 +100,7 @@ namespace Network
 	template<size_t _SIZE>
 	inline const unsigned short NetMessageQueue<_SIZE>::PeekReliableSequence() const
 	{
-		unsigned short ID = -1;
+		unsigned short ID = USHRT_MAX;
 		if (!Empty())
 		{
 			memcpy(&ID, myDataBuffer.data() + myFront + NetMessage::Size(), sizeof(unsigned short));

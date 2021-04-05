@@ -24,6 +24,7 @@ namespace Network
 		while (mySocket.Receive(recvBuf, fromAddress))
 		{
 			MessageID_t msgID = recvBuf[1];
+
 			if (msgID == eNETMESSAGE_ACKNOWLEDGEMENT)
 			{
 				AcknowledgementMessage msg;
@@ -32,10 +33,13 @@ namespace Network
 			}
 			else if (msgID > eNETMESSAGE_RELIABLE_ID)
 			{
-				AcknowledgementMessage ack(myReceivedMessages.Peek(), myReceivedMessages.PeekReliableSequence());
+				uint32_t sequence = 0;
+				memcpy(&sequence, recvBuf + 1 + NetMessage::Size(), sizeof(unsigned short));
+				AcknowledgementMessage ack(msgID, sequence);
+				assert(ack.mySequenceNr != USHRT_MAX);
 				mySocket.Send(ack, fromAddress);
-				
-				if (!myReliableNetMessageQueue.HasReceivedPreviously(ack.mySequenceNr))
+
+				if (!myReliableNetMessageQueue.HasReceivedPreviously(fromAddress, ack.mySequenceNr))
 				{
 					myReceivedMessages.EnqueueReceivedBuffer(recvBuf);
 				}

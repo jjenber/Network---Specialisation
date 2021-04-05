@@ -1,7 +1,7 @@
 #pragma once
 namespace components
 {
-	struct Network
+	struct UniqueID
 	{
 		entt::id_type myUniqueID = UINT_MAX;
 	};
