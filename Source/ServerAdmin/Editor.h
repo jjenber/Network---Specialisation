@@ -14,9 +14,11 @@ public:
 	
 private:
 	void DrawGrid();
-	void DrawAreaServerListControls();
+	void DrawMenuControls();
 	void DrawAreaServerList();
 	void DrawRegions();
+
+	void InstantiateMockClient() const;
 
 #pragma region ImGui Utility
 	ImVec4 AreaServerStatusToColor(eAreaServerStatus aStatus) const;
@@ -24,6 +26,7 @@ private:
 	ImVec2 WorldToScreenPos(const ImVec2& aWorldPosition) const;
 #pragma endregion
 
+	const float myWorldResolutionFactor = 0.25f;
 	float myZoomFactor = 1.f;
 	ImVec2 myWindowPos;
 	ImVec2 myScrolling;

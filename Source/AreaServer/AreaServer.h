@@ -1,7 +1,6 @@
 #pragma once
 #include "Common.h"
-#include "NetMessage\NetMessageQueue.hpp"
-#include "NetMessage\ReliableNetMessageQueue.h"
+#include "Connection\MultiConnection.h"
 #include "Connection\UnaryConnection.h"
 #include "AreaServerStatus.h"
 #include "../Game/GameArea.h"
@@ -23,12 +22,15 @@ private:
 	void SendEntityStates();
 
 	uint8_t myServerID = UINT8_MAX;
-	Network::UDPSocket mySocket;
 
 	// Game
 	GameArea myGame;
 
+	// Clients
+	Network::MultiConnection myClientConnections;
+
 	// World Server
+	Network::UDPSocket mySocket;
 	Network::UnaryConnection myWorldServerConnection;
 	Network::Address myWorldServerAddress;
 	Network::eConnectionStatus myConnectionStatus;

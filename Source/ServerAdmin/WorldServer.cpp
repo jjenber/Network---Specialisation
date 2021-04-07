@@ -187,6 +187,7 @@ void WorldServer::OnClientConnected(int aClientID, const Network::Address& aAddr
 	std::cout << "Connecting Client to " << 0 << std::endl;
 	
 	myClients[aClientID].myRegion = region;
+
 	Network::ReliableNetMessage message(Network::eNETMESSAGE_R_CLIENT_SPAWN);
 	myClientConnections.Send(message, aAddress);
 }

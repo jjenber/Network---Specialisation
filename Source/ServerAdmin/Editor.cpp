@@ -10,6 +10,7 @@
 #include "imgui_internal.h"
 #include <iostream>
 #include <sstream>
+#include <tchar.h>
 
 void Editor::Init(std::shared_ptr<Window> aWindowPtr)
 {
@@ -36,22 +37,29 @@ void Editor::Show()
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
 	bool open = true;
 	ImGui::Begin("Editor", &open, flags);
+	ImGui::BringWindowToDisplayBack(ImGui::GetCurrentWindow());
 	
 	DrawGrid();
 	DrawRegions();
+	ImGui::End();
+
+	// Admin Controlls
+	flags = 0;
+	flags |= ImGuiWindowFlags_NoTitleBar;
+	if (ImGui::Begin("Admin", &open, flags))
+	{
+		DrawMenuControls();
+		ImGui::End();
+	}
 
 	// Area Server view
 	{
-		flags = 0;
-		flags |= ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar;
-		ImGui::Begin("World Server", &open, flags);
-		DrawAreaServerListControls();
+		ImGui::Begin("Area Server List", &open);
 		DrawAreaServerList();
 		ImGui::End();
 	}
 
 	ImGui::ShowDemoWindow();
-	ImGui::End();
 	ImGui::PopStyleVar();
 }
 
@@ -79,7 +87,7 @@ void Editor::DrawGrid()
 			{
 				ImVec2 mouseRel = ImVec2{ ImGui::GetMousePos().x - ImGui::GetWindowPos().x, ImGui::GetMousePos().y - ImGui::GetWindowPos().y };
 				float prevZoom = myZoomFactor;
-				myZoomFactor = ImClamp(myZoomFactor + io.MouseWheel * myZoomFactor / 16.f, 0.3f, 3.f);
+				myZoomFactor = ImClamp(myZoomFactor + io.MouseWheel * myZoomFactor / 16.f, 0.1f, 3.f);
 				float zoomFactor = (prevZoom - myZoomFactor) / prevZoom;
 				myScrolling += (mouseRel - myScrolling) * zoomFactor;
 			}
@@ -111,25 +119,23 @@ void Editor::DrawGrid()
 	drawList->AddLine(origoX, ImVec2(origoX + ImVec2(size.x, 0)), 0xFFFFFFFF);
 	drawList->AddLine(origoY, ImVec2(origoY + ImVec2(0, size.y)), 0xFFFFFFFF);
 
-	drawList->AddText(WorldToScreenPos(ImVec2(20.f, -10.f)), 0xFFFFFFFF, "{ 0 : 0 }");
+	drawList->AddText(WorldToScreenPos(ImVec2(20.f, -15.f)),    0xFFFFFFFF, "{ 0 : 0 }");
+	drawList->AddText(WorldToScreenPos(ImVec2(10000.f, -15.f)), 0xFFFFFFFF, "{ 10000 : 0 }");
+	drawList->AddText(WorldToScreenPos(ImVec2(20000.f, -15.f)), 0xFFFFFFFF, "{ 20000 : 0 }");
+	drawList->AddText(WorldToScreenPos(ImVec2(-40.f, 10000.f)), 0xFFFFFFFF, "{ 0 : 10000 }");
+	drawList->AddText(WorldToScreenPos(ImVec2(-40.f, 20000.f)), 0xFFFFFFFF, "{ 0 : 20000 }");
 }
 
-void Editor::DrawAreaServerListControls()
+void Editor::DrawMenuControls()
 {
-	static bool enable = true;//myWorldServer.CanStartAreaServer();
-	if (!enable)
-	{
-		ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-		ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
-	}
-	if (ImGui::Button("Start Area Server"))
+	if (ImGui::Button("Instantiate Area Server"))
 	{
 		myWorldServer.InstantiateAreaServers();
 	}
-	if (!enable)
+	ImGui::SameLine();
+	if (ImGui::Button("Instantiate Mock Client"))
 	{
-		ImGui::PopItemFlag();
-		ImGui::PopStyleVar();
+		InstantiateMockClient();
 	}
 }
 
@@ -164,7 +170,7 @@ void Editor::DrawAreaServerList()
 void Editor::DrawRegions()
 {
 	const auto& registry = myWorldServer.GetRegistry();
-	const float halfsize = myZoomFactor * 2.f;
+	const float entityHalfsize = myZoomFactor * 4.f;
 	auto draw = ImGui::GetWindowDrawList();
 
 	for (int i = 0; i < myWorldServer.GetAreaServerInstanceArray().size(); i++)
@@ -176,12 +182,13 @@ void Editor::DrawRegions()
 			ImVec2 screenPos = WorldToScreenPos(ImVec2(transform.myPosition.x, transform.myPosition.z));
 
 			draw->AddRectFilled(
-				ImVec2(screenPos.x - halfsize, screenPos.y - halfsize), 
-				ImVec2(screenPos.x + halfsize, screenPos.y + halfsize),
+				ImVec2(screenPos.x - entityHalfsize, screenPos.y - entityHalfsize),
+				ImVec2(screenPos.x + entityHalfsize, screenPos.y + entityHalfsize),
 				IM_COL32(255, 255, 255, 125),
 				0.2f,
 				ImDrawFlags_RoundCornersAll);
 		}
+
 		ImVec2 topL = ImVec2(static_cast<float>((i % REGION_ROW_COL)) * REGION_SIZE, static_cast<float>((i / REGION_ROW_COL)) * REGION_SIZE);
 		ImVec2 botR = ImVec2(topL.x + REGION_SIZE, topL.y + REGION_SIZE);
 		int alpha = 30;
@@ -191,6 +198,35 @@ void Editor::DrawRegions()
 			IM_COL32(255, 0, 0, alpha);
 		
 		draw->AddRectFilled(WorldToScreenPos(topL), WorldToScreenPos(botR), color);
+	}
+}
+
+void Editor::InstantiateMockClient() const
+{
+	// additional information
+	STARTUPINFO si;
+	PROCESS_INFORMATION pi;
+
+	// set the size of the structures
+	ZeroMemory(&si, sizeof(si));
+	si.cb = sizeof(si);
+	ZeroMemory(&pi, sizeof(pi));
+
+	wchar_t cmd[] = L"-cmd";
+	if (!CreateProcess(
+		_T("GameClient_Debug.exe"),  // the path
+		cmd,                         // Command line
+		NULL,                        // Process handle not inheritable
+		NULL,                        // Thread handle not inheritable
+		FALSE,                       // Set handle inheritance to FALSE
+		CREATE_NEW_CONSOLE,          // No creation flags
+		NULL,                        // Use parent's environment block
+		NULL,                        // Use parent's starting directory 
+		&si,                         // Pointer to STARTUPINFO structure
+		&pi                          // Pointer to PROCESS_INFORMATION structure (removed extra parentheses)
+	))
+	{
+		std::cout << "Failed to create process: " << GetLastError() << std::endl;
 	}
 }
 
@@ -223,5 +259,5 @@ std::string Editor::AreaServerStatusToText(eAreaServerStatus aStatus) const
 
 ImVec2 Editor::WorldToScreenPos(const ImVec2& aWorldPosition) const
 {
-	return ImGui::GetWindowPos() + ImVec2(aWorldPosition.x, -aWorldPosition.y) * myZoomFactor * 0.25f + myScrolling;
+	return ImGui::GetWindowPos() + ImVec2(aWorldPosition.x, -aWorldPosition.y) * myZoomFactor * myWorldResolutionFactor + myScrolling;
 }

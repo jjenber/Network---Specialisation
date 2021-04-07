@@ -55,8 +55,11 @@ void AreaServer::ReadWorldServerMessage(Network::MessageID_t aMessageID)
 		Network::AreaServerStatus statusMsg((unsigned char)myStatus);
 		myWorldServerConnection.Send(statusMsg);
 		std::cout << "Sending status " << (int)statusMsg.myStatus << " from " << (int)statusMsg.mySenderID << std::endl;
+		
 		SendIDRequests();
 	
+		// Send My Client Address to the world server.
+
 	}	break;
 
 	case Network::eNETMESSAGE_R_AS_REQUEST_IDS_RESPONSE:
