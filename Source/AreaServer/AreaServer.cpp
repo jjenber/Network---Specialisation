@@ -16,7 +16,7 @@ AreaServer::AreaServer() :
 
 bool AreaServer::Startup()
 {
-	myWorldServerAddress = Network::Address("127.0.0.1", Network::Constants::DEFAULT_PORT);
+	myWorldServerAddress = Network::Address("127.0.0.1", Network::Constants::WORLD_TO_AREA_PORT);
 	myIsRunning = myWorldServerConnection.Connect(myWorldServerAddress, 3.f, Network::eNETMESSAGE_AS_HANDSHAKE);
 
 	return myIsRunning;

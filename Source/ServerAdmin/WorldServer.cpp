@@ -1,12 +1,14 @@
 #include "WorldServer.h"
 #include "Timer\Timer.h"
+
+#include <CommonUtilities\Random\Random.h>
 #include <iostream>
 #include <tchar.h>
 
 void WorldServer::Startup()
 {
 	myTime = 0;
-	myConnection.Init(
+	myAreaServerConnection.Init(
 		MAX_AREA_SERVERS, 
 		Network::eNetMessageID::eNETMESSAGE_AS_HANDSHAKE, 
 		[&](const Network::Address& aAddress, unsigned short aConnectionSlot)
@@ -15,12 +17,25 @@ void WorldServer::Startup()
 			});
 	
 	
-	if (myConnection.Bind("127.0.0.1", Network::Constants::DEFAULT_PORT))
+	myClientConnections.Init(
+		MAX_CLIENT_COUNT,
+		Network::eNETMESSAGE_CLIENT_HANDSHAKE,
+		[&](const Network::Address& aAddress, unsigned short aConnectionSlot)
+			{
+				OnClientConnected(aConnectionSlot, aAddress);
+			});
+
+	if (myAreaServerConnection.Bind("127.0.0.1", Network::Constants::WORLD_TO_AREA_PORT))
 	{
-		myConnection.GetSocket().SetBlocking(false);
-		std::cout << "Server is listening at " << myConnection.GetSocket().GetBoundAddress().ToString() << std::endl;
+		myAreaServerConnection.GetSocket().SetBlocking(false);
+		std::cout << "Server is listening for area servers at " << myAreaServerConnection.GetSocket().GetBoundAddress().ToString() << std::endl;
 	}
-	
+
+	if (myClientConnections.Bind("127.0.0.1", Network::Constants::WORLD_TO_CLIENT_PORT))
+	{
+		myClientConnections.GetSocket().SetBlocking(false);
+		std::cout << "Server is listening for clients at " << myClientConnections.GetSocket().GetBoundAddress().ToString() << std::endl;
+	}
 }
 
 void WorldServer::InstantiateAreaServers()
@@ -34,7 +49,7 @@ void WorldServer::InstantiateAreaServers()
 	si.cb = sizeof(si);
 	ZeroMemory(&pi, sizeof(pi));
 
-	wchar_t cmd[] = L"-testing";
+	wchar_t cmd[] = L"-cmd";
 	if (!CreateProcess(
 		_T("AreaServer_Debug.exe"),  // the path
 		cmd,                         // Command line
@@ -55,14 +70,19 @@ void WorldServer::InstantiateAreaServers()
 void WorldServer::Update(const float aDeltatime)
 {
 	myTime += aDeltatime;
-	myConnection.Update(aDeltatime);
-	while (myConnection.HasMessages())
+	myAreaServerConnection.Update(aDeltatime);
+	while (myAreaServerConnection.HasMessages())
 	{
 		HandleAreaServerMessages();
 	}
-	myConnection.ClearMessages();
-
+	myAreaServerConnection.ClearMessages();
 	SendRequestEntityStateRequests(aDeltatime);
+
+	myClientConnections.Update(aDeltatime);
+	while (myClientConnections.HasMessages())
+	{
+		
+	}
 }
 
 bool WorldServer::CanStartAreaServer() const
@@ -77,21 +97,22 @@ bool WorldServer::CanStartAreaServer() const
 
 void WorldServer::HandleAreaServerMessages()
 {
-	Network::MessageID_t id = myConnection.Peek();
+	Network::MessageID_t id = myAreaServerConnection.Peek();
 	switch (id)
 	{
 	case Network::eNETMESSAGE_R_AS_STATUS:
 	{
 		Network::AreaServerStatus msg;
-		myConnection.ReadNextMessage(msg);
+		myAreaServerConnection.ReadNextMessage(msg);
 		myAreaServerInstances[msg.mySenderID].myStatus = static_cast<eAreaServerStatus>(msg.myStatus);
+		
 		std::cout << "Received status msg "  << (int)msg.myStatus << std::endl;
 		break;
 	}
 	case Network::eNETMESSAGE_R_AS_REQUEST_IDS:
 	{
 		Network::RequestUniqueIDs msg;
-		myConnection.ReadNextMessage(msg);
+		myAreaServerConnection.ReadNextMessage(msg);
 
 		std::vector<entt::entity> entities;
 		myGameWorld.InstantiateEntities(msg.myCount, entities);
@@ -103,16 +124,17 @@ void WorldServer::HandleAreaServerMessages()
 			response.myMappedIDs[mapItr]     = msg.myLocalIDs[uniqueIDItr];
 			response.myMappedIDs[mapItr + 1] = static_cast<uint32_t>(entities[uniqueIDItr]);
 		}
+
 		AreaServerInstance& areaServer = myAreaServerInstances[msg.mySenderID];
 		areaServer.myEntities.insert(areaServer.myEntities.end(), entities.begin(), entities.end());
 
-		myConnection.Send(response, myAreaServerInstances[msg.mySenderID].myAddress);
+		myAreaServerConnection.Send(response, myAreaServerInstances[msg.mySenderID].myAddress);
 		break;
 	}
 	case Network::eNETMESSAGE_AS_RESPONSE_ENTITY_STATES:
 	{
 		Network::EntityStatesMessage msg(0);
-		myConnection.ReadNextMessage(msg);
+		myAreaServerConnection.ReadNextMessage(msg);
 
 		int region = myAreaServerInstances[msg.mySenderID].myRegions.front();
 		int regionOffsetX = (region % REGION_ROW_COL) * REGION_SIZE;
@@ -137,6 +159,38 @@ void WorldServer::OnAreaServerConnected(int aAreaServerID, const Network::Addres
 	DeployAreaServer(aAreaServerID);
 }
 
+void WorldServer::HandleClientMessages()
+{
+	Network::MessageID_t id = myAreaServerConnection.Peek();
+	switch (id)
+	{
+	default:
+		std::cout << "Unhandled message from Client: " << (int)id << std::endl;
+	}
+}
+
+void WorldServer::OnClientConnected(int aClientID, const Network::Address& aAddress)
+{
+	myClients[aClientID].myAddress = aAddress;
+	int region = -1;
+	for (int i = 0; i < myAreaServerInstances.size(); i++)
+	{
+		if (myAreaServerInstances[i].myStatus == eAreaServerStatus::Running)
+		{
+			if (myAreaServerInstances[i].myRegions.size() > 0)
+			{
+				region = myAreaServerInstances[i].myRegions[0];
+			}
+		}
+	}
+
+	std::cout << "Connecting Client to " << 0 << std::endl;
+	
+	myClients[aClientID].myRegion = region;
+	Network::ReliableNetMessage message(Network::eNETMESSAGE_R_CLIENT_SPAWN);
+	myClientConnections.Send(message, aAddress);
+}
+
 void WorldServer::DeployAreaServer(unsigned short aAreaServerID)
 {
 	int region = myGameWorld.GetUnassignedRegionIndex();
@@ -146,7 +200,7 @@ void WorldServer::DeployAreaServer(unsigned short aAreaServerID)
 		myAreaServerInstances[aAreaServerID].myRegions.push_back(region);
 
 		Network::DeployAreaServer message(region);
-		myConnection.Send(message, myAreaServerInstances[aAreaServerID].myAddress);
+		myAreaServerConnection.Send(message, myAreaServerInstances[aAreaServerID].myAddress);
 		myAreaServerInstances[aAreaServerID].myStatus = eAreaServerStatus::Loading;
 
 		std::cout << "Deploying Region " << region << " on AreaServer " << aAreaServerID << std::endl;
@@ -165,7 +219,7 @@ void WorldServer::SendRequestEntityStateRequests(const float aDeltatime)
 		if (instance.myStatus == eAreaServerStatus::Running && myTime - instance.myLastMessage > 1.5f)
 		{
 			instance.myLastMessage = myTime;
-			myConnection.Send(msg, instance.myAddress);
+			myAreaServerConnection.Send(msg, instance.myAddress);
 			
 		}
 	}

@@ -1,32 +1,26 @@
 #include "Common.h"
-#include "NetMessage\NetMessageQueue.hpp"
-#include "NetMessage\ReliableNetMessageQueue.h"
-#include <atomic>
+#include "Connection\UnaryConnection.h"
 
 namespace Network
 {
 	class Client
 	{
 	public:
+		Client();
 		void Init();
 		void Disconnect();
-		void Update();
-		void ConnectToServer();
+		void Update(float aDeltatime);
 
 		int GetClientSlot() const { return myClientSlot; }
-		eConnectionStatus GetConnectionStatus() const { return myConnectionStatus; }
+		eConnectionStatus GetConnectionStatus() const { return myWorldServerConnection.GetConnectionStatus(); }
 
 	private:
-		void ReceiveIncomingMessages();
-		void Decode(MessageID_t aMessageID);
-		void DecodeReliable(MessageID_t aMessageID);
+		void HandleWorldServerMessages();
 
 		UDPSocket myUDPSocket;
-		Address myMainServerAddress;
-		NetMessageQueue<1024> myReceivedMessages;
-		ReliableNetMessageQueue myReliableMessageQueue;
-		std::atomic<eConnectionStatus> myConnectionStatus = eConnectionStatus::Disconnected;
-		
+		Network::UnaryConnection myWorldServerConnection;
+		Network::Address myWorldServerAddress;
+
 		int myClientSlot = INT_MAX;
 	};
 }

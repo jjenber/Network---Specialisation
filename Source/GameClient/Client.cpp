@@ -1,14 +1,22 @@
 #include "pch.h"
 #include "Client.h"
-#include "NetMessage\NetMessage.h"
 #include "Timer\Timer.h"
+
 #include <iostream>
 #include <chrono>
+
+Network::Client::Client() : myWorldServerConnection(myUDPSocket)
+{}
 
 void Network::Client::Init()
 {
 	myUDPSocket.SetBlocking(false);
-	myMainServerAddress = Address("127.0.0.1", Constants::DEFAULT_PORT);
+	myWorldServerAddress = Address("127.0.0.1", Constants::WORLD_TO_CLIENT_PORT);
+
+	if (myWorldServerConnection.Connect(myWorldServerAddress, 20.f, eNETMESSAGE_CLIENT_HANDSHAKE))
+	{
+
+	}
 }
 
 void Network::Client::Disconnect()
@@ -16,97 +24,36 @@ void Network::Client::Disconnect()
 	ReliableNetMessage disconnect(eNETMESSAGE_R_DISCONNECT);
 	disconnect.mySenderID = myClientSlot;
 	
-	//myReliableMessageQueue.Enqueue(disconnect, myMainServerAddress, 5, 50);
-	myConnectionStatus = eConnectionStatus::Disconnecting;
-	myUDPSocket.Send(disconnect, myMainServerAddress);
+	myWorldServerConnection.Send(disconnect);
 }
 
-void Network::Client::Update()
+void Network::Client::Update(float aDeltatime)
 {
-	ReceiveIncomingMessages();
-}
-
-void Network::Client::ConnectToServer()
-{
-	HandshakeMessage msg(eNETMESSAGE_CLIENT_HANDSHAKE);
+	myWorldServerConnection.Update(aDeltatime);
 	
-	myConnectionStatus = eConnectionStatus::Connecting;
-	myUDPSocket.Send(msg, myMainServerAddress);
-
-	Timer timer;
-	while (myConnectionStatus == eConnectionStatus::Connecting)
+	while (myWorldServerConnection.HasMessages())
 	{
-		timer.Update();
-		if (timer.GetTotalTime() > 5.f)
-		{
-			myUDPSocket.Send(msg, myMainServerAddress);
-			timer.Reset();
-		}
-
-		ReceiveIncomingMessages();
+		HandleWorldServerMessages();
 	}
 }
 
-void Network::Client::ReceiveIncomingMessages()
+void Network::Client::HandleWorldServerMessages()
 {
-	Address addr;
-	char recvBuf[Constants::MAX_BUFFER_SIZE]{};
+	using namespace Network;
+	MessageID_t id = myWorldServerConnection.Peek();
 
-	while (myUDPSocket.Receive(recvBuf, addr))
+	switch (id)
 	{
-		myReceivedMessages.EnqueueReceivedBuffer(recvBuf);
-	}
-
-	while (!myReceivedMessages.Empty())
+	case eNETMESSAGE_R_CLIENT_SPAWN:
 	{
-		MessageID_t msgID = myReceivedMessages.Peek();
-		if (msgID > eNetMessageID::eNETMESSAGE_RELIABLE_ID)
-		{
-			DecodeReliable(msgID);
-		}
-		else if (msgID > eNETMESSAGE_NONE)
-		{
-			Decode(msgID);
-		}
-	}
-}
-
-void Network::Client::Decode(MessageID_t aMessageID)
-{
-	switch (aMessageID)
-	{
-	case eNETMESSAGE_CLIENT_HANDSHAKE:
-	{
-		HandshakeMessage message;
-		myReceivedMessages.Dequeue(message);
-		myClientSlot = message.myClientSlot;
-		myConnectionStatus = eConnectionStatus::Connected;
-		break;
-	}
-	case eNETMESSAGE_HEARTBEAT:
-	{
-		NetMessage msg;
-		myReceivedMessages.Dequeue(msg);
-		msg.mySenderID = myClientSlot;
-		myUDPSocket.Send(msg, myMainServerAddress);
-		break;
-	}
-	case eNETMESSAGE_ACKNOWLEDGEMENT:
-	{
-		AcknowledgementMessage msg;
-		myReceivedMessages.Dequeue(msg);
-		myConnectionStatus = eConnectionStatus::Disconnected;
+		ReliableNetMessage msg;
+		myWorldServerConnection.ReadNextMessage(msg);
+		std::cout << "Spawn received from WS" << std::endl;
 		break;
 	}
 	default:
+		std::cout << "Unhandled message id: " << (int)id << std::endl;
 		break;
 	}
-}
 
-void Network::Client::DecodeReliable(MessageID_t aMessageID)
-{
-	std::cout << "Recieved reliable: " << aMessageID << std::endl;
-	ReliableNetMessage ack;
-	myReceivedMessages.Dequeue(ack);
-	myUDPSocket.Send(ack, myMainServerAddress);
 }

@@ -25,6 +25,7 @@ bool Network::UnaryConnection::Connect(const Address& aAddress, float aTimeoutIn
 		timeout -= timer.Update();
 		if (timer.GetTotalTime() > 0.5f)
 		{
+			std::cout << "Sending handshake " << std::endl;
 			SendOrEnqueue(msg, aAddress);
 			timer.Reset();
 		}

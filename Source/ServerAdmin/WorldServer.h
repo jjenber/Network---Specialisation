@@ -4,7 +4,7 @@
 #include "../AreaServer/AreaServerStatus.h"
 #include "../Game/GameWorld.h"
 
-constexpr auto MAX_AREA_SERVERS = 16;
+constexpr auto MAX_AREA_SERVERS = REGION_COUNT;
 
 struct AreaServerInstance
 {
@@ -13,6 +13,13 @@ struct AreaServerInstance
 	std::vector<int> myRegions;
 	std::vector<entt::entity> myEntities;
 	double myLastMessage = 0;
+};
+
+struct Client
+{
+	entt::entity aUniqueID;
+	Network::Address myAddress;
+	int myRegion = -1;
 };
 
 class WorldServer
@@ -27,19 +34,23 @@ public:
 	const std::array<AreaServerInstance, MAX_AREA_SERVERS>& GetAreaServerInstanceArray() const { return myAreaServerInstances; }
 	const entt::registry& GetRegistry() const { return myGameWorld.GetRegistry(); }
 	bool CanStartAreaServer() const;
+
 private:
+	void DeployAreaServer(unsigned short aAreaServerID);
 	void HandleAreaServerMessages();
 	void OnAreaServerConnected(int aAreaServerID, const Network::Address& aAddress);
-
-	void DeployAreaServer(unsigned short aAreaServerID);
-
 	void SendRequestEntityStateRequests(const float aDeltatime);
+	
+	void HandleClientMessages();
+	void OnClientConnected(int aClientID, const Network::Address& aAddress);
 
 	std::array<AreaServerInstance, MAX_AREA_SERVERS> myAreaServerInstances;
+	std::array<Client, MAX_CLIENT_COUNT> myClients;
 
-	Network::MultiConnection myConnection;
+	Network::MultiConnection myAreaServerConnection;
+	Network::MultiConnection myClientConnections;
+	
 	double myTime = 0;
-
 	GameWorld myGameWorld;
 };
 

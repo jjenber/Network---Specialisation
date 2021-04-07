@@ -24,9 +24,9 @@ bool Network::Socket::Bind(const Address& aAddress)
 	return true;
 }
 
-bool Network::Socket::BindToLocal()
+bool Network::Socket::BindToLocal(uint32_t aPort)
 {
-	Address addr = Address("127.0.0.1", Constants::DEFAULT_PORT);
+	Address addr = Address("127.0.0.1", aPort);
 	return Bind(addr);
 }
 

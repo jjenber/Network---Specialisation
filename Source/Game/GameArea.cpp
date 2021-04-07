@@ -71,9 +71,9 @@ void GameArea::Update(const float aDeltatime)
 			transform.myPosition.x = REGION_SIZE;
 		if (transform.myPosition.x < 0.f)
 			transform.myPosition.x = 0.f;
-		if (transform.myPosition.y > REGION_SIZE)
-			transform.myPosition.y = REGION_SIZE;
-		if (transform.myPosition.y < 0.f)
-			transform.myPosition.y = 0.f;
+		if (transform.myPosition.z > REGION_SIZE)
+			transform.myPosition.z = REGION_SIZE;
+		if (transform.myPosition.z < 0.f)
+			transform.myPosition.z = 0.f;
 	}
 }

@@ -111,7 +111,7 @@ void Editor::DrawGrid()
 	drawList->AddLine(origoX, ImVec2(origoX + ImVec2(size.x, 0)), 0xFFFFFFFF);
 	drawList->AddLine(origoY, ImVec2(origoY + ImVec2(0, size.y)), 0xFFFFFFFF);
 
-	drawList->AddText(WorldToScreenPos(ImVec2(-10.f, -10.f)), 0xFFFFFFFF, "{ 0 : 0 }");
+	drawList->AddText(WorldToScreenPos(ImVec2(20.f, -10.f)), 0xFFFFFFFF, "{ 0 : 0 }");
 }
 
 void Editor::DrawAreaServerListControls()

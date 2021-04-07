@@ -25,7 +25,7 @@ namespace Network
 		void SendOrEnqueue(NetMessageType& aNetMessage, const Address& aAddress);
 		
 		UDPSocket&				mySocket;
-		NetMessageQueue<2048>	myReceivedMessages;
+		NetMessageQueue<4096>	myReceivedMessages;
 
 	private:
 		virtual void OnReceivedMessage(char recvBuffer[Constants::MAX_BUFFER_SIZE], const Address& aAddress) = 0;

@@ -29,6 +29,7 @@ bool Network::MultiConnection::Bind(const std::string& aIP, unsigned short aPort
 
 void Network::MultiConnection::SetMaxConnections(size_t aMaxConnected)
 {
+	myMaxConnections = aMaxConnected;
 	myConnections.resize(aMaxConnected);
 }
 
@@ -73,8 +74,10 @@ void Network::MultiConnection::HandleHandshakeMessage(int connectionSlot, const 
 	if (slot == MultiConnection::ConnectionSlotNotFound)
 	{
 		std::cout << "Refused connection" << std::endl;
-		// TODO: CONNECTION REFUSED. NO ROOM
-		return ;
+
+		Network::NetMessage serverFull(eNETMESSAGE_SERVER_FULL);
+		mySocket.Send(serverFull, aAddress);
+		return;
 	}
 	
 	if (connectionSlot == MultiConnection::ConnectionSlotNotFound)
@@ -102,7 +105,7 @@ int Network::MultiConnection::GetConnectionSlot(const Address& aAddress) const
 
 int Network::MultiConnection::FindFreeConnectionSlot() const
 {
-	for (int i = 0; i < Constants::MAX_CLIENT_COUNT; i++)
+	for (int i = 0; i < myMaxConnections; i++)
 	{
 		if (!myConnections[i].IsConnected())
 		{

@@ -11,7 +11,7 @@ namespace Network
 
 		void SetBlocking(bool aBlock);
 		bool Bind(const Address& aAddress);
-		bool BindToLocal();
+		bool BindToLocal(uint32_t aPort);
 		void Close();
 		const Address& GetBoundAddress();
 	protected:

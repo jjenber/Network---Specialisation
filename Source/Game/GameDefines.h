@@ -1,7 +1,7 @@
 #pragma once
 
-#define REGION_COUNT 16
-#define REGION_ROW_COL 4
+#define REGION_COUNT 9
+#define REGION_ROW_COL 3
 
-#define REGION_SIZEF 1000.f
-#define REGION_SIZE 1000
+#define REGION_SIZEF 10000.f
+#define REGION_SIZE 10000

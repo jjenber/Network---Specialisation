@@ -13,6 +13,8 @@ namespace Network
 		template<class NetMessageType>
 		void Send(const NetMessageType& aNetMessage);
 
+		eConnectionStatus GetConnectionStatus() const { return myConnectionStatus; }
+
 	private:
 		void OnReceivedMessage(char aBuffer[Constants::MAX_BUFFER_SIZE], const Network::Address& aFromAddress);
 
