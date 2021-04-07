@@ -7,6 +7,11 @@ Network::Address::Address() : myIP(0), myPort(0), myType(eType::Undefined)
 {
 }
 
+Network::Address::Address(const sockaddr_in& aSockAddr)
+{
+	SetFromSockAddr(aSockAddr);
+}
+
 Network::Address::Address(const std::string& aAddress, unsigned short aPort) : myPort(aPort)
 {
 	SetIPFromString(aAddress);
@@ -71,7 +76,7 @@ std::string Network::Address::ToString() const
 
 bool Network::Address::Valid() const
 {
-	return myType != eType::Undefined;
+	return myType != eType::Undefined || myPort == 0;
 }
 
 

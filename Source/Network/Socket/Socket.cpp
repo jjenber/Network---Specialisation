@@ -20,7 +20,15 @@ bool Network::Socket::Bind(const Address& aAddress)
 		std::cout << "Error when binding socket. " << WSAGetLastError() << std::endl;
 		return false;
 	}
-	myBoundAddress = aAddress;
+	
+	sockaddr_in name{};
+	int len = sizeof(name);
+	if (getsockname(mySocket, (sockaddr*)&name, &len) == SOCKET_ERROR)
+	{
+		std::cout << "Error getsockname() " << WSAGetLastError() << std::endl;
+	}
+
+	myBoundAddress = name;
 	return true;
 }
 

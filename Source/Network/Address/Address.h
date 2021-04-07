@@ -17,6 +17,7 @@ namespace Network
 		};
 
 		Address();
+		Address(const sockaddr_in& aSockAddr);
 		Address(const std::string& aAddress, unsigned short aPort);
 		
 		bool operator==(const Address& aAddress) const;
