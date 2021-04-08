@@ -31,7 +31,9 @@ namespace Network
 		Network::UnaryConnection myAreaServerConnection;
 
 		CommonUtilities::Vector3f myPosition;
+		CommonUtilities::Vector3f myVelocity;
 
+		float mySendMoveTimer = 0;
 		int myClientSlot = INT_MAX;
 	};
 }

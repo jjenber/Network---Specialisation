@@ -22,6 +22,8 @@ struct Client
 	entt::entity aUniqueID;
 	Network::Address myAddress;
 	int myRegion = -1;
+	int myNextRegion = -1;
+	bool myIsMigrating = false;
 };
 
 class WorldServer

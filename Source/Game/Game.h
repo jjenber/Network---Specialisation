@@ -14,7 +14,11 @@ public:
 	size_t GetEntityCount() const;
 	void SetUniqueID(const entt::id_type aLocalID, const entt::id_type aUniqueID);
 
+	CommonUtilities::Vector3f GetPosition(entt::entity aID) const;
+	uint32_t GetUniqueID(entt::entity aID) const;
+
 	const entt::registry& GetRegistry() { return myRegistry; };
+
 protected:
 	entt::registry myRegistry;
 };

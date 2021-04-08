@@ -51,9 +51,18 @@ std::vector<entt::id_type> GameArea::GetUniqueIDs() const
 	return result;
 }
 
+void GameArea::SetClientVelocity(entt::entity aLocalID, const CommonUtilities::Vector3f& aVelocity)
+{
+	myRegistry.get<components::Velocity>(entt::entity(aLocalID)).myVelocity = aVelocity;
+}
+
 void GameArea::Update(const float aDeltatime)
 {
 	// Clients
+	for (auto&& [entity, transform, vel] : myRegistry.view<components::Transform, components::Velocity, components::Client>().each())
+	{
+		transform.myPosition += vel.myVelocity * aDeltatime;
+	}
 
 	// NPCs
 	const float maxSpeed = 100.f;

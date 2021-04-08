@@ -206,7 +206,7 @@ void Editor::DrawRegions()
 			draw->AddCircleFilled(screenPos, radius, IM_COL32(10, 120, 255, 255));
 		}
 
-		int alpha = areaServer.myClients.size() == 0 ? 20 : 40;
+		int alpha = areaServer.myClients.size() == 0 ? 10 : 45;
 		ImU32 color = 
 			areaServer.myStatus == eAreaServerStatus::Running ? IM_COL32(0, 255, 0, alpha) : 
 			areaServer.myStatus == eAreaServerStatus::Loading ? IM_COL32(255, 255, 0, alpha) :

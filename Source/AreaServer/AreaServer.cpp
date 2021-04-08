@@ -4,6 +4,7 @@
 
 #include "../Game/Components/Transform.hpp"
 #include "../Game/Components/UniqueID.hpp"
+#include "../Game/Components/Client.hpp"
 #include <iostream>
 
 AreaServer::AreaServer() : 
@@ -40,7 +41,6 @@ bool AreaServer::Startup()
 bool AreaServer::Update(const float aDeltatime)
 {
 	myWorldServerConnection.Update(aDeltatime);
-
 	while (myWorldServerConnection.HasMessages())
 	{
 		HandleWorldServerMessage(myWorldServerConnection.Peek());
@@ -49,10 +49,12 @@ bool AreaServer::Update(const float aDeltatime)
 	myClientConnections.Update(aDeltatime);
 	while (myClientConnections.HasMessages())
 	{
-		
+		HandleClientMessage(myClientConnections.Peek());
 	}
 
 	myGame.Update(aDeltatime);
+	
+	SyncClients(aDeltatime);
 
 	return myIsRunning;
 }
@@ -101,11 +103,57 @@ void AreaServer::HandleWorldServerMessage(Network::MessageID_t aMessageID)
 		Network::ClientEnterAreaMessage msg;
 		myWorldServerConnection.ReadNextMessage(msg);
 
-		std::cout << "A client entered the area: " << msg.myClientAddress.ToString() << std::endl;
-		myGame.InstantiateClient(msg.myPosition, msg.myUniqueID);
-		
-	}	break;
+		QueueClientItem queue;
+		queue.myPosition = msg.myPosition;
+		queue.myUniqueID = msg.myUniqueID;
+		queue.myToken    = msg.myToken;
 
+		myQueuedClients.push_back(queue);
+
+	}	break;
+	default:
+		std::cout << "Message ID: " << (int)aMessageID << " not handled." << std::endl;
+		break;
+	}
+}
+
+void AreaServer::HandleClientMessage(Network::MessageID_t aMessageID)
+{
+	switch (aMessageID)
+	{
+	case Network::eNETMESSAGE_CLIENT_MOVE:
+	{
+		Network::ClientMoveMessage msg;
+		myClientConnections.ReadNextMessage(msg);
+
+		if (myClientData[msg.mySenderID].myIsConnected && myClientData[msg.mySenderID].myIsValidated)
+		{
+			myGame.SetClientVelocity(myClientData[msg.mySenderID].myLocalID, msg.myVelocity);
+		}
+		break;
+	}
+
+	case Network::eNETMESSAGE_R_CLIENT_VALIDATE_TOKEN:
+	{
+		Network::ClientValidateTokenMessage msg;
+		myClientConnections.ReadNextMessage(msg);
+
+		std::cout << "Validation: " << msg.myToken << " " << msg.myUniqueID << std::endl;
+		for (int i = 0; i < myQueuedClients.size(); i++)
+		{
+			if (myQueuedClients[i].myToken == msg.myToken && myQueuedClients[i].myUniqueID == msg.myUniqueID)
+			{
+				entt::entity clientEntity = myGame.InstantiateClient(myQueuedClients[i].myPosition, myQueuedClients[i].myUniqueID);
+				myClientData[msg.mySenderID].myUniqueID = msg.myUniqueID;
+				myClientData[msg.mySenderID].myLocalID = clientEntity;
+				myClientData[msg.mySenderID].myIsValidated = true;
+
+				myQueuedClients.erase(myQueuedClients.begin() + i);
+				break;
+			}
+		}
+
+	}   break;
 	default:
 		std::cout << "Message ID: " << (int)aMessageID << " not handled." << std::endl;
 		break;
@@ -127,21 +175,20 @@ void AreaServer::SendIDRequests()
 		}
 
 		requestIDsMsg.SetCount(static_cast<uint8_t>(count));
+
 		myWorldServerConnection.Send(requestIDsMsg);
 	}
 }
 
 void AreaServer::SendEntityStates()
 {
-	using EntityState_t = Network::EntityState;
-
-	std::vector<EntityState_t> entityStates;
+	std::vector<Network::EntityState> entityStates;
 	auto view = myGame.GetRegistry().view<const components::UniqueID, const components::Transform>();
 	entityStates.reserve(view.size_hint());
 
 	for (auto&& [localID, uniqueID, transform] : view.each())
 	{
-		entityStates.push_back(EntityState_t(transform.myPosition.x, transform.myPosition.z, uniqueID.myUniqueID));
+		entityStates.push_back(Network::EntityState(transform.myPosition.x, transform.myPosition.z, uniqueID.myUniqueID));
 	}
 
 	Network::EntityStatesMessage message;
@@ -155,11 +202,55 @@ void AreaServer::SendEntityStates()
 			message.myData[i] = entityStates[entityIndex];
 		}
 		message.SetCount(static_cast<uint8_t>(count));
+
 		myWorldServerConnection.Send(message);
 	}
 }
 
 void AreaServer::OnClientConnected(const Network::Address& aAddress, unsigned short aConnectionSlot)
 {
+	std::cout << "Client connected" << std::endl;
+	myClientData[aConnectionSlot].myIsConnected = true;
+	myClientData[aConnectionSlot].myAddress = aAddress;
+}
 
+void AreaServer::SyncClients(const float aDeltatime)
+{
+	mySyncClientsTimer += aDeltatime;
+	if (mySyncClientsTimer >= 0.2f)
+	{
+		std::vector<Network::EntityState> entityStates;
+		Network::ClientServerPosition msg;
+
+		for (const auto& data : myClientData)
+		{
+			if (data.myIsConnected && data.myIsValidated)
+			{
+				msg.myPosition = myGame.GetPosition(data.myLocalID);
+				myClientConnections.Send(msg, data.myAddress);
+
+				entityStates.push_back(Network::EntityState(msg.myPosition.x, msg.myPosition.z, data.myUniqueID));
+			}
+		}
+
+		mySyncClientsTimer = 0.f;
+
+		// Sync all client states to World Server
+
+		Network::EntityStatesMessage message;
+		message.myMessageID = Network::eNETMESSAGE_AS_CLIENT_STATES;
+
+		int entityIndex = 0;
+		while (entityIndex < entityStates.size())
+		{
+			int count = 0;
+			for (int i = 0; i < Network::EntityStatesMessage::MaxCount && entityIndex < entityStates.size(); i++, count++, entityIndex++)
+			{
+				message.myData[i] = entityStates[entityIndex];
+			}
+			message.SetCount(static_cast<uint8_t>(count));
+
+			myWorldServerConnection.Send(message);
+		}
+	}
 }

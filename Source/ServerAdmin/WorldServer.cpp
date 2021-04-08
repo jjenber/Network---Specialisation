@@ -147,6 +147,7 @@ void WorldServer::HandleAreaServerMessages()
 		break;
 	}
 
+	case Network::eNETMESSAGE_AS_CLIENT_STATES:
 	case Network::eNETMESSAGE_AS_RESPONSE_ENTITY_STATES:
 	{
 		Network::EntityStatesMessage msg(0);
@@ -191,6 +192,7 @@ void WorldServer::OnClientConnected(int aClientID, const Network::Address& aAddr
 	Network::Address areaServerClientAddress;
 
 	CommonUtilities::Vector3f aPosition;
+
 	aPosition.x = Random::Range(0.f, REGION_SIZEF);
 	aPosition.z = Random::Range(0.f, REGION_SIZEF);
 	
@@ -217,7 +219,6 @@ void WorldServer::OnClientConnected(int aClientID, const Network::Address& aAddr
 	Client& client = myClients[aClientID];
 	client.myRegion = region;
 	client.myAddress = aAddress;
-	
 
 	Network::ClientEnterAreaMessage message(
 		CommonUtilities::Vector3<uint16_t>{ static_cast<uint16_t>(aPosition.x), static_cast<uint16_t>(aPosition.y), static_cast<uint16_t>(aPosition.z) }, 
@@ -225,7 +226,8 @@ void WorldServer::OnClientConnected(int aClientID, const Network::Address& aAddr
 		areaServerClientAddress.GetPort(),
 		id,
 		0,
-		aAddress);
+		aAddress,
+		Random::Range(1, INT_MAX));
 
 	myClientConnections.Send(message, aAddress);
 	myAreaServerConnection.Send(message, areaServerAddress);
@@ -264,7 +266,6 @@ void WorldServer::SendRequestEntityStateRequests(const float aDeltatime)
 		{
 			instance.myLastMessage = myTime;
 			myAreaServerConnection.Send(msg, instance.myAddress);
-			
 		}
 	}
 }

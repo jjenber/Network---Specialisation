@@ -31,12 +31,13 @@ namespace Network
 
 		// Client
 		eNETMESSAGE_CLIENT_HANDSHAKE,
+		eNETMESSAGE_CLIENT_MOVE,
 
 		// Area Server Messages
 		eNETMESSAGE_AS_HANDSHAKE = 64,
 		eNETMESSAGE_AS_REQUEST_ENTITY_STATES,
 		eNETMESSAGE_AS_RESPONSE_ENTITY_STATES,
-
+		eNETMESSAGE_AS_CLIENT_STATES,
 
 		eNETMESSAGE_RELIABLE_ID = 126,
 		eNETMESSAGE_R_HANDSHAKE_RESPONSE,
@@ -52,6 +53,7 @@ namespace Network
 		// Reliable Client Messages
 		eNETMESSAGE_R_CLIENT_ENTER_AREA,
 		eNETMESSAGE_R_CLIENT_EXIT_AREA,
+		eNETMESSAGE_R_CLIENT_VALIDATE_TOKEN,
 	};
 
 #pragma pack(push, 1)
@@ -87,6 +89,29 @@ namespace Network
 		return sizeof(NetMessage) - sizeof(void*);
 	}
 
+	class ClientMoveMessage : public NetMessage
+	{
+	public:
+		ClientMoveMessage(uint32_t aUniqueID = UINT_MAX, const CommonUtilities::Vector3f& aVelocity = CommonUtilities::Vector3f()) 
+			: NetMessage(eNETMESSAGE_CLIENT_MOVE), myUniqueID(aUniqueID), myVelocity(aVelocity)
+		{
+			mySize = GetSizeOfMessage<ClientMoveMessage>();
+		};
+		CommonUtilities::Vector3f myVelocity;
+		uint32_t myUniqueID;
+	};
+
+	class ClientServerPosition : public NetMessage
+	{
+	public:
+		ClientServerPosition(const CommonUtilities::Vector3f& aPosition = CommonUtilities::Vector3f()) 
+			: NetMessage(eNETMESSAGE_CLIENT_MOVE), myPosition(aPosition)
+		{
+			mySize = GetSizeOfMessage<ClientServerPosition>();
+		};
+		CommonUtilities::Vector3f myPosition;
+	};
+
 	struct EntityState
 	{
 		EntityState() = default;
@@ -95,21 +120,23 @@ namespace Network
 		float myZ;
 		uint32_t myUniqueID;
 	};
+
 	class EntityStatesMessage : public NetMessage
 	{
 	public:
-
 		static constexpr size_t MaxCount = Constants::MAX_MESSAGE_PAYLOAD_SIZE / sizeof(EntityState);
 
 		EntityStatesMessage(uint8_t aCount = 0) : NetMessage(eNETMESSAGE_AS_RESPONSE_ENTITY_STATES), myCount(aCount)
 		{
 			SetCount(aCount);
 		};
+
 		void SetCount(uint8_t aCount)
 		{ 
 			myCount = aCount;
 			mySize = GetSizeOfMessage<EntityStatesMessage>() - ((size_t(MaxCount) - aCount) * sizeof(EntityState));
 		};
+
 		uint8_t myCount;
 		EntityState myData[MaxCount];
 	};
@@ -148,6 +175,8 @@ namespace Network
 		MessageID_t myAcknowledgedMessageID;
 		unsigned short mySequenceNr;
 	};
+
+#pragma region Reliable Messages
 
 	class ReliableNetMessage : public NetMessage
 	{
@@ -231,26 +260,43 @@ namespace Network
 	class ClientEnterAreaMessage : public ReliableNetMessage
 	{
 	public:
-		ClientEnterAreaMessage(const CommonUtilities::Vector3<uint16_t>& aPosition = CommonUtilities::Vector3<uint16_t>(), uint32_t aAreaServerIP = 0, uint32_t aAreaServerPort = 0, uint32_t aUniqueID = 0, uint8_t aRegion = 0, const Address& aClientAddress = Address()) 
+		ClientEnterAreaMessage(const CommonUtilities::Vector3<uint16_t>& aPosition = CommonUtilities::Vector3<uint16_t>(), uint32_t aAreaServerIP = 0, uint32_t aAreaServerPort = 0, uint32_t aUniqueID = 0, uint8_t aRegion = 0, const Address& aClientAddress = Address(), uint32_t aToken = 0) 
 			: ReliableNetMessage(eNETMESSAGE_R_CLIENT_ENTER_AREA),
 			myPosition(aPosition),
 			myAreaServerIP(aAreaServerIP),
 			myAreaServerPort(aAreaServerPort),
 			myRegion(aRegion),
 			myUniqueID(aUniqueID),
+			myToken(aToken),
 			myClientAddress(aClientAddress)
 		{
 			mySize = GetSizeOfMessage<ClientEnterAreaMessage>();
 		}
-
 
 		CommonUtilities::Vector3<uint16_t> myPosition;
 		Address  myClientAddress;
 		uint32_t myUniqueID;
 		uint32_t myAreaServerIP;
 		uint32_t myAreaServerPort;
+		uint32_t myToken;
 		uint8_t  myRegion = UCHAR_MAX;
 	};
+
+	class ClientValidateTokenMessage : public ReliableNetMessage
+	{
+	public:
+		ClientValidateTokenMessage(uint32_t aUniqueID = 0, uint32_t aToken = 0)
+			: ReliableNetMessage(eNETMESSAGE_R_CLIENT_VALIDATE_TOKEN),
+			  myUniqueID(aUniqueID),
+			  myToken(aToken)
+		{
+			mySize = GetSizeOfMessage<ClientValidateTokenMessage>();
+		}
+		uint32_t myUniqueID;
+		uint32_t myToken;
+	};
+
+#pragma endregion ReliableMessages
 
 #pragma pack(pop)
 }

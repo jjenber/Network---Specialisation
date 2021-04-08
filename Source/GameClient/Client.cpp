@@ -2,8 +2,17 @@
 #include "Client.h"
 #include "Timer\Timer.h"
 
+#include <CommonUtilities\Random\Random.h>
 #include <iostream>
 #include <chrono>
+
+//////////////////////////////////////////////////////////////////////////////
+/// 
+///  The current purpose of this class is just to simulate the connection to
+///  a World Server from a user, and to seamlessly travel between dedicated 
+///  Area Servers. No actual gameplay is done for the client.
+/// 
+///////////////////////////////////////////////////////////////////////////////
 
 Network::Client::Client() : 
 	myWorldServerConnection(myWorldServerSocket), 
@@ -12,6 +21,9 @@ Network::Client::Client() :
 
 void Network::Client::Init()
 {
+	myVelocity.x = Random::Range(-1.f, 1.f);
+	myVelocity = myVelocity.GetNormalized() * 100.f;
+
 	myWorldServerSocket.SetBlocking(false);
 	myWorldServerAddress = Address("127.0.0.1", Constants::WORLD_TO_CLIENT_PORT);
 
@@ -35,6 +47,8 @@ void Network::Client::Disconnect()
 
 void Network::Client::Update(float aDeltatime)
 {
+	mySendMoveTimer += aDeltatime;
+
 	myWorldServerConnection.Update(aDeltatime);
 	
 	while (myWorldServerConnection.HasMessages())
@@ -48,6 +62,13 @@ void Network::Client::Update(float aDeltatime)
 		while (myAreaServerConnection.HasMessages())
 		{
 			HandleAreaServerMessages();
+		}
+
+		if (mySendMoveTimer > 0.4)
+		{
+			ClientMoveMessage move(myUniqueID, myVelocity);
+			myAreaServerConnection.Send(move);
+			mySendMoveTimer = 0.f;
 		}
 	}
 }
@@ -74,8 +95,13 @@ void Network::Client::HandleWorldServerMessages()
 		myAreaServerAddress = Address(msg.myAreaServerIP, msg.myAreaServerPort);
 		myAreaServerConnection.Connect(myAreaServerAddress, 10.f, eNETMESSAGE_CLIENT_HANDSHAKE);
 
+		ClientValidateTokenMessage validate;
+		validate.myToken = msg.myToken;
+		validate.myUniqueID = msg.myUniqueID;
+		myAreaServerConnection.Send(validate);
 		break;
 	}
+
 	default:
 		std::cout << "Unhandled message id: " << (int)id << std::endl;
 		break;
@@ -86,11 +112,20 @@ void Network::Client::HandleWorldServerMessages()
 void Network::Client::HandleAreaServerMessages()
 {
 	using namespace Network;
-	MessageID_t id = myWorldServerConnection.Peek();
+	MessageID_t id = myAreaServerConnection.Peek();
 
 	switch (id)
 	{
-		
-
+		case eNETMESSAGE_CLIENT_MOVE:
+		{
+			ClientServerPosition msg;
+			myAreaServerConnection.ReadNextMessage(msg);
+			myPosition = msg.myPosition;
+			std::cout << "Received position from world server." << std::endl;
+			break;
+		}
+		default:
+			std::cout << "Unhandled message from Area Server " << (int)id << std::endl;
+			break;
 	}
 }
