@@ -2,6 +2,7 @@
 #include "GameDefines.h"
 #include "Entt\entt.hpp"
 #include <vector>
+#include <CommonUtilities\Math\Vector3.h>
 
 class GameWorld
 {
@@ -12,10 +13,17 @@ class GameWorld
 
 public:
 	void Init();
+	
 	void InstantiateEntities(const int aEntityCount, std::vector<entt::entity>& aUniqueIDs);
+
+	entt::id_type InstantiateClient(const CommonUtilities::Vector3f& aPosition);
+	
 	int GetUnassignedRegionIndex() const;
+	
 	void InitRegion(unsigned int aRegionID, unsigned int aAreaServerID);
+	
 	void UpdateEntityState(entt::id_type aID, float myX, float myZ);
+	
 	const entt::registry& GetRegistry() const { return myWorldRegistry; };
 
 private:

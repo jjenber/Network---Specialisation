@@ -6,6 +6,7 @@
 #include "Components\UniqueID.hpp"
 #include "Components\Transform.hpp"
 #include "Components\Velocity.hpp"
+#include "Components\Client.hpp"
 
 void GameArea::Init(int aRegionID)
 {
@@ -29,10 +30,8 @@ void GameArea::Init(int aRegionID)
 std::vector<entt::id_type> GameArea::GetUnsyncedIDs() const
 {
 	std::vector<entt::id_type> result;
-
-	auto view = myRegistry.view<const components::Transform>(entt::exclude<components::UniqueID>);
 	
-	for (auto&& [id, transform] : view.each())
+	for (auto&& [id, transform] : myRegistry.view<const components::Transform>(entt::exclude<components::UniqueID>).each())
 	{
 		result.push_back(entt::id_type(id));
 	}
@@ -44,9 +43,8 @@ std::vector<entt::id_type> GameArea::GetUniqueIDs() const
 {
 	std::vector<entt::id_type> result;
 	result.reserve(myRegistry.size<components::UniqueID>());
-	auto view = std::as_const(myRegistry).view<const components::UniqueID>();
 
-	for (auto&& [id, net] : view.each())
+	for (auto&& [id, net] : std::as_const(myRegistry).view<const components::UniqueID>().each())
 	{
 		result.push_back(entt::id_type(id));
 	}
@@ -55,8 +53,11 @@ std::vector<entt::id_type> GameArea::GetUniqueIDs() const
 
 void GameArea::Update(const float aDeltatime)
 {
+	// Clients
+
+	// NPCs
 	const float maxSpeed = 100.f;
-	for (auto&& [entity, transform, vel] : myRegistry.view<components::Transform, components::Velocity>().each())
+	for (auto&& [entity, transform, vel] : myRegistry.view<components::Transform, components::Velocity>(entt::exclude<components::Client>).each())
 	{
 		transform.myPosition += vel.myVelocity * aDeltatime;
 		vel.myVelocity.x += Random::Range(-10.f, 10.f);

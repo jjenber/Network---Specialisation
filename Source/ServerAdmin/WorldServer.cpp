@@ -1,5 +1,5 @@
 #include "WorldServer.h"
-#include "Timer\Timer.h"
+#include "Timer/Timer.h"
 
 #include <CommonUtilities\Random\Random.h>
 #include <iostream>
@@ -15,7 +15,6 @@ void WorldServer::Startup()
 			{
 				OnAreaServerConnected(aConnectionSlot, aAddress);
 			});
-	
 	
 	myClientConnections.Init(
 		MAX_CLIENT_COUNT,
@@ -100,6 +99,7 @@ void WorldServer::HandleAreaServerMessages()
 	Network::MessageID_t id = myAreaServerConnection.Peek();
 	switch (id)
 	{
+
 	case Network::eNETMESSAGE_R_AS_STATUS:
 	{
 		Network::AreaServerStatus msg;
@@ -109,11 +109,26 @@ void WorldServer::HandleAreaServerMessages()
 		std::cout << "Received status msg "  << (int)msg.myStatus << std::endl;
 		break;
 	}
+
+	case Network::eNETMESSAGE_R_AS_INITIALIZED:
+	{
+		Network::AreaServerInitialized msg;
+		myAreaServerConnection.ReadNextMessage(msg);
+
+		AreaServerInstance& instance = myAreaServerInstances[msg.mySenderID];
+
+		instance.myStatus = eAreaServerStatus::Running;
+		instance.myClientConnectionAddress = msg.myClientConnectionAddress;
+
+		std::cout << "Area server initialized. Its inbounding client connection address: "  << msg.myClientConnectionAddress.ToString() << std::endl;
+		break;
+	}
+
 	case Network::eNETMESSAGE_R_AS_REQUEST_IDS:
 	{
 		Network::RequestUniqueIDs msg;
 		myAreaServerConnection.ReadNextMessage(msg);
-
+		 
 		std::vector<entt::entity> entities;
 		myGameWorld.InstantiateEntities(msg.myCount, entities);
 
@@ -131,6 +146,7 @@ void WorldServer::HandleAreaServerMessages()
 		myAreaServerConnection.Send(response, myAreaServerInstances[msg.mySenderID].myAddress);
 		break;
 	}
+
 	case Network::eNETMESSAGE_AS_RESPONSE_ENTITY_STATES:
 	{
 		Network::EntityStatesMessage msg(0);
@@ -171,30 +187,56 @@ void WorldServer::HandleClientMessages()
 
 void WorldServer::OnClientConnected(int aClientID, const Network::Address& aAddress)
 {
-	myClients[aClientID].myAddress = aAddress;
+	Network::Address areaServerAddress;
+	Network::Address areaServerClientAddress;
+
+	CommonUtilities::Vector3f aPosition;
+	aPosition.x = Random::Range(0.f, REGION_SIZEF);
+	aPosition.z = Random::Range(0.f, REGION_SIZEF);
+	
+	entt::id_type id = myGameWorld.InstantiateClient(aPosition);
+
 	int region = -1;
+
 	for (int i = 0; i < myAreaServerInstances.size(); i++)
 	{
 		if (myAreaServerInstances[i].myStatus == eAreaServerStatus::Running)
 		{
-			if (myAreaServerInstances[i].myRegions.size() > 0)
-			{
-				region = myAreaServerInstances[i].myRegions[0];
-			}
+			AreaServerInstance& areaServer = myAreaServerInstances[i];
+
+			region                  = areaServer.myRegions[0];
+			areaServerAddress       = areaServer.myAddress;
+			areaServerClientAddress = areaServer.myClientConnectionAddress;
+
+			areaServer.myClients.push_back(entt::entity(id));
 		}
 	}
 
-	std::cout << "Connecting Client to " << 0 << std::endl;
-	
-	myClients[aClientID].myRegion = region;
+	std::cout << "Connecting Client to slot " << 0 << std::endl;
 
-	Network::ReliableNetMessage message(Network::eNETMESSAGE_R_CLIENT_SPAWN);
+	Client& client = myClients[aClientID];
+	client.myRegion = region;
+	client.myAddress = aAddress;
+	
+
+	Network::ClientEnterAreaMessage message(
+		CommonUtilities::Vector3<uint16_t>{ static_cast<uint16_t>(aPosition.x), static_cast<uint16_t>(aPosition.y), static_cast<uint16_t>(aPosition.z) }, 
+		areaServerClientAddress.GetIP(), 
+		areaServerClientAddress.GetPort(),
+		id,
+		0,
+		aAddress);
+
 	myClientConnections.Send(message, aAddress);
+	myAreaServerConnection.Send(message, areaServerAddress);
+
+	std::cout << "Sending area server-to-client address: " << areaServerClientAddress.ToString() << std::endl;
 }
 
 void WorldServer::DeployAreaServer(unsigned short aAreaServerID)
 {
 	int region = myGameWorld.GetUnassignedRegionIndex();
+	
 	if (region >= 0)
 	{
 		myGameWorld.InitRegion(region, aAreaServerID);
@@ -215,6 +257,7 @@ void WorldServer::DeployAreaServer(unsigned short aAreaServerID)
 void WorldServer::SendRequestEntityStateRequests(const float aDeltatime)
 {
 	Network::NetMessage msg(Network::eNETMESSAGE_AS_REQUEST_ENTITY_STATES);
+
 	for (auto& instance : myAreaServerInstances)
 	{
 		if (instance.myStatus == eAreaServerStatus::Running && myTime - instance.myLastMessage > 1.5f)

@@ -12,14 +12,8 @@ int main(int argc, char* argv[])
 
 	Network::Context context;
 	AreaServer areaServer;
-	if (areaServer.Startup())
-	{
-		std::cout << "Successfully connected!" << std::endl;
-	}
-	else
-	{
-		std::cout << "Connection timed out" << std::endl;
-	}
+	if (!areaServer.Startup()) return 0;
+
 
 	Timer timer;
 	while (areaServer.Update(timer.GetDeltaTime()))

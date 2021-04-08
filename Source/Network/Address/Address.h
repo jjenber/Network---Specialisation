@@ -18,8 +18,9 @@ namespace Network
 
 		Address();
 		Address(const sockaddr_in& aSockAddr);
-		Address(const std::string& aAddress, unsigned short aPort);
-		
+		Address(const std::string& aAddress, uint16_t aPort);
+		Address(uint32_t aIPV4, uint16_t aPort);
+
 		bool operator==(const Address& aAddress) const;
 
 		void SetFromSockAddr(const sockaddr_in& aSockAddr);
@@ -40,7 +41,7 @@ namespace Network
 			uint32_t myIP;
 			uint8_t myIPBytes[4];
 		};
-		unsigned short myPort;
+		uint32_t myPort;
 		eType   myType;
 	};
 
@@ -54,7 +55,7 @@ namespace std
 		{
 			return 
 				( std::hash<uint32_t>()(address.GetIP())
-				^ (std::hash<unsigned short>()(address.GetPort()) << 1));
+				^ (std::hash<uint16_t>()(address.GetPort()) << 1));
 		}
 	};
 }

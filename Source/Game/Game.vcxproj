@@ -92,6 +92,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Components\Client.hpp" />
     <ClInclude Include="Components\UniqueID.hpp" />
     <ClInclude Include="Components\Transform.hpp" />
     <ClInclude Include="Components\Velocity.hpp" />

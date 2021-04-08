@@ -12,9 +12,13 @@ Network::Address::Address(const sockaddr_in& aSockAddr)
 	SetFromSockAddr(aSockAddr);
 }
 
-Network::Address::Address(const std::string& aAddress, unsigned short aPort) : myPort(aPort)
+Network::Address::Address(const std::string& aAddress, uint16_t aPort) : myPort(aPort)
 {
 	SetIPFromString(aAddress);
+}
+
+Network::Address::Address(uint32_t aIPV4, uint16_t aPort) : myPort(aPort), myIP(aIPV4), myType(eType::Ipv4)
+{
 }
 
 bool Network::Address::operator==(const Address& aAddress) const

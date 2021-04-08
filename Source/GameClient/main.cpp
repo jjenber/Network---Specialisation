@@ -18,8 +18,7 @@ int main()
 		std::cout << "Failed to connect: " << (int)client.GetConnectionStatus() << std::endl;
 		return 0;
 	}
-	
-	std::cout << "Connected at slot: " << client.GetClientSlot() << std::endl;
+	std::cout << "Connected at slot " << (int)client.GetWorldServerClientSlot() << std::endl;
 
 	Timer timer;
 	float time = 0;

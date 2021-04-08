@@ -16,10 +16,12 @@ public:
 
 	inline Network::eConnectionStatus GetStatus() const { return myConnectionStatus; }
 private:
-	void ReadWorldServerMessage(Network::MessageID_t aMessageID);
+	void HandleWorldServerMessage(Network::MessageID_t aMessageID);
 
 	void SendIDRequests();
 	void SendEntityStates();
+
+	void OnClientConnected(const Network::Address& aAddress, unsigned short aConnectionSlot);
 
 	uint8_t myServerID = UINT8_MAX;
 

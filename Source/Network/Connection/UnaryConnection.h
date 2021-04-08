@@ -15,6 +15,8 @@ namespace Network
 
 		eConnectionStatus GetConnectionStatus() const { return myConnectionStatus; }
 
+		ClientSlot_t GetConnectionSlot() const { return mySlot; }
+
 	private:
 		void OnReceivedMessage(char aBuffer[Constants::MAX_BUFFER_SIZE], const Network::Address& aFromAddress);
 

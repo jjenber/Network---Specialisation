@@ -1,21 +1,30 @@
 #include "pch.h"
 #include "GameWorld.h"
 #include "Components\Transform.hpp"
+#include "Components\Client.hpp"
 
-void GameWorld::Init()
-{
-
-}
+void GameWorld::Init() {}
 
 void GameWorld::InstantiateEntities(const int aEntityCount, std::vector<entt::entity>& aUniqueIDs)
 {
 	aUniqueIDs.reserve(aEntityCount);
+
 	for (int i = 0; i < aEntityCount; i++)
 	{
 		entt::entity entity = myWorldRegistry.create();
 		aUniqueIDs.push_back(entity);
 		myWorldRegistry.emplace<components::Transform>(entity);
 	}
+}
+
+entt::id_type GameWorld::InstantiateClient(const CommonUtilities::Vector3f& aPosition)
+{
+	entt::entity entity = myWorldRegistry.create();
+
+	myWorldRegistry.emplace<components::Client>(entity);
+	myWorldRegistry.emplace<components::Transform>(entity);
+
+	return static_cast<entt::id_type>(entity);
 }
 
 int GameWorld::GetUnassignedRegionIndex() const
@@ -38,6 +47,7 @@ void GameWorld::InitRegion(unsigned int aRegionID, unsigned int aAreaServerID)
 void GameWorld::UpdateEntityState(entt::id_type aID, float myX, float myZ)
 {
 	components::Transform& transform = myWorldRegistry.get<components::Transform>(entt::entity(aID));
+
 	transform.myPosition.x = myX;
 	transform.myPosition.z = myZ;
 }

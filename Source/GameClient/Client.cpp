@@ -5,17 +5,23 @@
 #include <iostream>
 #include <chrono>
 
-Network::Client::Client() : myWorldServerConnection(myUDPSocket)
+Network::Client::Client() : 
+	myWorldServerConnection(myWorldServerSocket), 
+	myAreaServerConnection(myAreaServerSocket)
 {}
 
 void Network::Client::Init()
 {
-	myUDPSocket.SetBlocking(false);
+	myWorldServerSocket.SetBlocking(false);
 	myWorldServerAddress = Address("127.0.0.1", Constants::WORLD_TO_CLIENT_PORT);
 
-	if (myWorldServerConnection.Connect(myWorldServerAddress, 20.f, eNETMESSAGE_CLIENT_HANDSHAKE))
+	if (myWorldServerConnection.Connect(myWorldServerAddress, 10.f, eNETMESSAGE_CLIENT_HANDSHAKE))
 	{
-
+		std::cout << "Connected" << std::endl;
+	}
+	else
+	{
+		std::cout << "Failed to connect to World Server" << std::endl;
 	}
 }
 
@@ -35,6 +41,15 @@ void Network::Client::Update(float aDeltatime)
 	{
 		HandleWorldServerMessages();
 	}
+
+	if (myAreaServerConnection.GetConnectionStatus() != eConnectionStatus::Disconnected)
+	{
+		myAreaServerConnection.Update(aDeltatime);
+		while (myAreaServerConnection.HasMessages())
+		{
+			HandleAreaServerMessages();
+		}
+	}
 }
 
 void Network::Client::HandleWorldServerMessages()
@@ -44,11 +59,21 @@ void Network::Client::HandleWorldServerMessages()
 
 	switch (id)
 	{
-	case eNETMESSAGE_R_CLIENT_SPAWN:
+	case eNETMESSAGE_R_CLIENT_ENTER_AREA:
 	{
-		ReliableNetMessage msg;
+		ClientEnterAreaMessage msg;
 		myWorldServerConnection.ReadNextMessage(msg);
-		std::cout << "Spawn received from WS" << std::endl;
+		
+		myUniqueID = msg.myUniqueID;
+		myPosition = CommonUtilities::Vector3f
+		{ 
+			static_cast<float>(msg.myPosition.x), 
+			static_cast<float>(msg.myPosition.y), 
+			static_cast<float>(msg.myPosition.z) 
+		};
+		myAreaServerAddress = Address(msg.myAreaServerIP, msg.myAreaServerPort);
+		myAreaServerConnection.Connect(myAreaServerAddress, 10.f, eNETMESSAGE_CLIENT_HANDSHAKE);
+
 		break;
 	}
 	default:
@@ -56,4 +81,16 @@ void Network::Client::HandleWorldServerMessages()
 		break;
 	}
 
+}
+
+void Network::Client::HandleAreaServerMessages()
+{
+	using namespace Network;
+	MessageID_t id = myWorldServerConnection.Peek();
+
+	switch (id)
+	{
+		
+
+	}
 }

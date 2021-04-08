@@ -9,9 +9,11 @@ constexpr auto MAX_AREA_SERVERS = REGION_COUNT;
 struct AreaServerInstance
 {
 	Network::Address myAddress;
+	Network::Address myClientConnectionAddress;
 	eAreaServerStatus myStatus = eAreaServerStatus::Shutdown;
 	std::vector<int> myRegions;
 	std::vector<entt::entity> myEntities;
+	std::vector<entt::entity> myClients;
 	double myLastMessage = 0;
 };
 

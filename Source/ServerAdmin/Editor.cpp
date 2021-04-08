@@ -156,10 +156,13 @@ void Editor::DrawAreaServerList()
 				ImGui::Text("Status: ");
 				ImGui::SameLine();
 				ImGui::TextColored(AreaServerStatusToColor(server.myStatus), AreaServerStatusToText(server.myStatus).c_str());
+				
 				// IP
 				ImGui::LabelText("##IPAddress", "Address: %s", server.myAddress.ToString().c_str());
+				
 				// Entity Count
 				ImGui::Text("Entity Count: %i", static_cast<int>(server.myEntities.size()));
+				ImGui::Text("Client Count: %i", static_cast<int>(server.myClients.size()));
 			}
 			header.str(std::string());
 		}
@@ -176,7 +179,9 @@ void Editor::DrawRegions()
 	for (int i = 0; i < myWorldServer.GetAreaServerInstanceArray().size(); i++)
 	{
 		auto& areaServer = myWorldServer.GetAreaServerInstanceArray()[i];
-		for (auto& entity : areaServer.myEntities)
+	
+		// Entities
+		for (entt::entity entity : areaServer.myEntities)
 		{
 			const components::Transform& transform = registry.get<components::Transform>(entity);
 			ImVec2 screenPos = WorldToScreenPos(ImVec2(transform.myPosition.x, transform.myPosition.z));
@@ -185,13 +190,23 @@ void Editor::DrawRegions()
 				ImVec2(screenPos.x - entityHalfsize, screenPos.y - entityHalfsize),
 				ImVec2(screenPos.x + entityHalfsize, screenPos.y + entityHalfsize),
 				IM_COL32(255, 255, 255, 125),
-				0.2f,
-				ImDrawFlags_RoundCornersAll);
+				0.2f);
 		}
 
 		ImVec2 topL = ImVec2(static_cast<float>((i % REGION_ROW_COL)) * REGION_SIZE, static_cast<float>((i / REGION_ROW_COL)) * REGION_SIZE);
 		ImVec2 botR = ImVec2(topL.x + REGION_SIZE, topL.y + REGION_SIZE);
-		int alpha = 30;
+		
+		// Clients
+		for (entt::entity client : areaServer.myClients)
+		{
+			const components::Transform& transform = registry.get<components::Transform>(client);
+			ImVec2 screenPos = WorldToScreenPos(ImVec2(transform.myPosition.x, transform.myPosition.z));
+
+			float radius = myZoomFactor * 25.f;
+			draw->AddCircleFilled(screenPos, radius, IM_COL32(10, 120, 255, 255));
+		}
+
+		int alpha = areaServer.myClients.size() == 0 ? 20 : 40;
 		ImU32 color = 
 			areaServer.myStatus == eAreaServerStatus::Running ? IM_COL32(0, 255, 0, alpha) : 
 			areaServer.myStatus == eAreaServerStatus::Loading ? IM_COL32(255, 255, 0, alpha) :

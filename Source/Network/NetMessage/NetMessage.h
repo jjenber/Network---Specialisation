@@ -1,5 +1,7 @@
 #pragma once
 #include "Config.h"
+#include "Address\Address.h"
+#include <CommonUtilities\Math\Vector3.h>
 #include <string>
 #include <limits>
 #include <cassert>
@@ -42,12 +44,14 @@ namespace Network
 		
 		// Reliable Area Server Messages 
 		eNETMESSAGE_R_AS_DEPLOY,
+		eNETMESSAGE_R_AS_INITIALIZED,
 		eNETMESSAGE_R_AS_STATUS,
 		eNETMESSAGE_R_AS_REQUEST_IDS,
 		eNETMESSAGE_R_AS_REQUEST_IDS_RESPONSE,
 
 		// Reliable Client Messages
-		eNETMESSAGE_R_CLIENT_SPAWN,
+		eNETMESSAGE_R_CLIENT_ENTER_AREA,
+		eNETMESSAGE_R_CLIENT_EXIT_AREA,
 	};
 
 #pragma pack(push, 1)
@@ -97,7 +101,7 @@ namespace Network
 
 		static constexpr size_t MaxCount = Constants::MAX_MESSAGE_PAYLOAD_SIZE / sizeof(EntityState);
 
-		EntityStatesMessage(uint8_t aCount) : NetMessage(eNETMESSAGE_AS_RESPONSE_ENTITY_STATES), myCount(aCount)
+		EntityStatesMessage(uint8_t aCount = 0) : NetMessage(eNETMESSAGE_AS_RESPONSE_ENTITY_STATES), myCount(aCount)
 		{
 			SetCount(aCount);
 		};
@@ -136,8 +140,8 @@ namespace Network
 	class AcknowledgementMessage : public NetMessage
 	{
 	public:
-		AcknowledgementMessage(MessageID_t aAcknowledgedMessageID = eNETMESSAGE_NONE, unsigned short aSequenceNr = USHRT_MAX) :
-			myAcknowledgedMessageID(aAcknowledgedMessageID), mySequenceNr(aSequenceNr), NetMessage(eNETMESSAGE_ACKNOWLEDGEMENT)
+		AcknowledgementMessage(MessageID_t aAcknowledgedMessageID = eNETMESSAGE_NONE, unsigned short aSequenceNr = USHRT_MAX) 
+			: myAcknowledgedMessageID(aAcknowledgedMessageID), mySequenceNr(aSequenceNr), NetMessage(eNETMESSAGE_ACKNOWLEDGEMENT)
 		{
 			mySize = GetSizeOfMessage<AcknowledgementMessage>();
 		}
@@ -147,14 +151,13 @@ namespace Network
 
 	class ReliableNetMessage : public NetMessage
 	{
-		friend class ReliableNetMessageQueue;
 	public:
 		ReliableNetMessage(const eNetMessageID aMessageType = eNETMESSAGE_NONE)
 			: NetMessage(aMessageType), mySequenceNr(USHRT_MAX)
 		{
 			mySize = GetSizeOfMessage<ReliableNetMessage>();
-			assert(mySize == 6);
 		}
+
 		virtual ~ReliableNetMessage() {};
 		unsigned short mySequenceNr;
 	};
@@ -192,26 +195,61 @@ namespace Network
 
 	class ResponseUniqueIDs : public ReliableNetMessage
 	{
-		friend class ReliableNetMessageQueue;
 	public:
-		ResponseUniqueIDs(unsigned char aCount)
+		ResponseUniqueIDs(uint8_t aCount = 0)
 			: ReliableNetMessage(eNETMESSAGE_R_AS_REQUEST_IDS_RESPONSE), myCount(aCount) {
-			mySize = GetSizeOfMessage<ResponseUniqueIDs>() - ((size_t(100) - (aCount * 2)) * sizeof(myMappedIDs[0]));
+			mySize = GetSizeOfMessage<ResponseUniqueIDs>() - ((size_t(100) - (size_t(aCount) * 2)) * sizeof(myMappedIDs[0]));
 		};
 
 		uint8_t myCount;
+
 		/// Even: local, Odd: unique
 		uint32_t myMappedIDs[100]{};
 	};
 
 	class AreaServerStatus : public ReliableNetMessage
 	{
-		friend class ReliableNetMessageQueue;
 	public:
-		AreaServerStatus(unsigned char aStatus = UCHAR_MAX) : ReliableNetMessage(eNETMESSAGE_R_AS_STATUS), myStatus(aStatus) {
+		AreaServerStatus(uint8_t aStatus = UCHAR_MAX) : ReliableNetMessage(eNETMESSAGE_R_AS_STATUS), myStatus(aStatus) 
+		{
 			mySize = GetSizeOfMessage<AreaServerStatus>();
 		};
 		unsigned char myStatus;
+	};
+
+	class AreaServerInitialized : public ReliableNetMessage
+	{
+	public:
+		AreaServerInitialized(Address aClientConnectionAddress = Address()) 
+			: ReliableNetMessage(eNETMESSAGE_R_AS_INITIALIZED), myClientConnectionAddress(aClientConnectionAddress)
+		{
+			mySize = GetSizeOfMessage<AreaServerInitialized>();
+		};
+		Address myClientConnectionAddress;
+	};
+
+	class ClientEnterAreaMessage : public ReliableNetMessage
+	{
+	public:
+		ClientEnterAreaMessage(const CommonUtilities::Vector3<uint16_t>& aPosition = CommonUtilities::Vector3<uint16_t>(), uint32_t aAreaServerIP = 0, uint32_t aAreaServerPort = 0, uint32_t aUniqueID = 0, uint8_t aRegion = 0, const Address& aClientAddress = Address()) 
+			: ReliableNetMessage(eNETMESSAGE_R_CLIENT_ENTER_AREA),
+			myPosition(aPosition),
+			myAreaServerIP(aAreaServerIP),
+			myAreaServerPort(aAreaServerPort),
+			myRegion(aRegion),
+			myUniqueID(aUniqueID),
+			myClientAddress(aClientAddress)
+		{
+			mySize = GetSizeOfMessage<ClientEnterAreaMessage>();
+		}
+
+
+		CommonUtilities::Vector3<uint16_t> myPosition;
+		Address  myClientAddress;
+		uint32_t myUniqueID;
+		uint32_t myAreaServerIP;
+		uint32_t myAreaServerPort;
+		uint8_t  myRegion = UCHAR_MAX;
 	};
 
 #pragma pack(pop)
