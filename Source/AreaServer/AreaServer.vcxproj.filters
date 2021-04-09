@@ -8,4 +8,7 @@
     <ClInclude Include="AreaServer.h" />
     <ClInclude Include="AreaServerStatus.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="cpp.hint" />
+  </ItemGroup>
 </Project>

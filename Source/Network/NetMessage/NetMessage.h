@@ -49,8 +49,10 @@ namespace Network
 		eNETMESSAGE_R_AS_STATUS,
 		eNETMESSAGE_R_AS_REQUEST_IDS,
 		eNETMESSAGE_R_AS_REQUEST_IDS_RESPONSE,
+		eNETMESSAGE_R_AS_CLIENT_MIGRATE,
 
 		// Reliable Client Messages
+		eNETMESSAGE_R_CLIENT_ABORT_MIGRATE,
 		eNETMESSAGE_R_CLIENT_ENTER_AREA,
 		eNETMESSAGE_R_CLIENT_EXIT_AREA,
 		eNETMESSAGE_R_CLIENT_VALIDATE_TOKEN,
@@ -282,6 +284,18 @@ namespace Network
 		uint8_t  myRegion = UCHAR_MAX;
 	};
 
+	class ClientExitAreaMessage : public ReliableNetMessage
+	{
+	public:
+		ClientExitAreaMessage(uint32_t aUniqueID = 0) 
+			: ReliableNetMessage(eNETMESSAGE_R_CLIENT_EXIT_AREA),
+			  myUniqueID(aUniqueID)
+		{
+			mySize = GetSizeOfMessage<ClientExitAreaMessage>();
+		}
+		uint32_t myUniqueID;
+	};
+
 	class ClientValidateTokenMessage : public ReliableNetMessage
 	{
 	public:
@@ -294,6 +308,21 @@ namespace Network
 		}
 		uint32_t myUniqueID;
 		uint32_t myToken;
+	};
+
+	class ClientMigrateMessage : public ReliableNetMessage
+	{
+	public:
+		ClientMigrateMessage(uint8_t aX = UINT8_MAX, uint8_t aY = UINT8_MAX)
+			: ReliableNetMessage(eNETMESSAGE_R_AS_CLIENT_MIGRATE),
+			  myX(aX), 
+			  myY(aY) 
+		{
+			mySize = GetSizeOfMessage<ClientMigrateMessage>();
+		};
+
+		uint8_t myX;
+		uint8_t myY;
 	};
 
 #pragma endregion ReliableMessages

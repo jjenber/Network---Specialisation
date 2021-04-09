@@ -8,9 +8,24 @@ void Network::UnaryConnection::OnReceivedMessage(char aBuffer[Constants::MAX_BUF
 	myReceivedMessages.EnqueueReceivedBuffer(aBuffer);
 }
 
+void Network::UnaryConnection::Disconnect() 
+{
+	if (mySocket)
+	{
+		mySocket->Close();
+		mySocket = nullptr;
+	}
+
+	Clear();
+
+	myConnectionStatus = eConnectionStatus::Disconnected;
+	myAddress = Address();
+	myReceivedMessages.Clear();
+}
+
 bool Network::UnaryConnection::Connect(const Address& aAddress, float aTimeoutInSeconds, eNetMessageID aHandshakeID)
 {
-	mySocket.SetBlocking(false);
+	mySocket->SetBlocking(false);
 	myConnectedAddress = aAddress;
 	myConnectionStatus = eConnectionStatus::Connecting;
 
@@ -32,14 +47,14 @@ bool Network::UnaryConnection::Connect(const Address& aAddress, float aTimeoutIn
 
 		memset(buf, 0, Constants::MAX_BUFFER_SIZE);
 
-		while (mySocket.Receive(buf, from))
+		while (mySocket->Receive(buf, from))
 		{
 			myReceivedMessages.EnqueueReceivedBuffer(buf);
 			if (myReceivedMessages.Peek() == aHandshakeID)
 			{
 				myReceivedMessages.Dequeue(msg);
 				mySlot = msg.mySenderID;
-				myAddress = mySocket.GetBoundAddress();
+				myAddress = mySocket->GetBoundAddress();
 				myConnectionStatus = eConnectionStatus::Connected;
 			}
 		}

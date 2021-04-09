@@ -6,9 +6,8 @@ namespace Network
 	class UnaryConnection : public BaseConnection
 	{
 	public:
-		using BaseConnection::BaseConnection;
-
 		bool Connect(const Address& aAddress, float aTimeoutInSeconds, eNetMessageID aHandshakeID);
+		void Disconnect();
 
 		template<class NetMessageType>
 		void Send(const NetMessageType& aNetMessage);

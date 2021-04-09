@@ -7,6 +7,8 @@
 #include "Components\Transform.hpp"
 #include "Components\Velocity.hpp"
 #include "Components\Client.hpp"
+#include "Components\MigrateClient.hpp"
+#include "Components\ShadowClient.hpp"
 
 void GameArea::Init(int aRegionID)
 {
@@ -19,6 +21,7 @@ void GameArea::Init(int aRegionID)
 	{
 		const float rX = Random::Range(0.f, REGION_SIZEF);
 		const float rZ = Random::Range(0.f, REGION_SIZEF);
+
 		entt::entity entity = InstantiateEntity(cu::Vector3f(rX, 0, rZ));
 		if (i % 10 == 0)
 		{
@@ -51,6 +54,21 @@ std::vector<entt::id_type> GameArea::GetUniqueIDs() const
 	return result;
 }
 
+int GameArea::ChangeClientIntoShadowEntity(entt::id_type aUniqueID)
+{
+	for (auto&& [entity, uniqueID, client] : myRegistry.view<components::UniqueID, components::Client>().each())
+	{
+		if (uniqueID.myUniqueID == aUniqueID)
+		{
+			int slot = client.myClientSlot;
+			myRegistry.remove<components::Client>(entity);
+			myRegistry.emplace<components::ShadowClient>(entity);
+			return slot;
+		}
+	}
+	return -1;
+}
+
 void GameArea::SetClientVelocity(entt::entity aLocalID, const CommonUtilities::Vector3f& aVelocity)
 {
 	myRegistry.get<components::Velocity>(entt::entity(aLocalID)).myVelocity = aVelocity;
@@ -59,9 +77,26 @@ void GameArea::SetClientVelocity(entt::entity aLocalID, const CommonUtilities::V
 void GameArea::Update(const float aDeltatime)
 {
 	// Clients
-	for (auto&& [entity, transform, vel] : myRegistry.view<components::Transform, components::Velocity, components::Client>().each())
+	for (auto&& [entity, transform, vel, client] : myRegistry.view<components::Transform, components::Velocity, components::Client>(entt::exclude<components::ShadowClient>).each())
 	{
 		transform.myPosition += vel.myVelocity * aDeltatime;
+		
+		if (transform.myPosition.x > REGION_SIZEF - REGION_BUFFER_ZONE && vel.myVelocity.x > 0.f)
+		{
+			myRegistry.emplace_or_replace<components::MigrateClient>(entity, 1, 0);
+		}
+		else if (transform.myPosition.x < REGION_BUFFER_ZONE && vel.myVelocity.x < 0.f)
+		{
+			myRegistry.emplace_or_replace<components::MigrateClient>(entity, -1, 0);
+		}
+		if (transform.myPosition.y > REGION_SIZEF - REGION_BUFFER_ZONE && vel.myVelocity.y > 0.f)
+		{
+			myRegistry.emplace_or_replace<components::MigrateClient>(entity, 0, 1);
+		}
+		else if (transform.myPosition.x < REGION_BUFFER_ZONE && vel.myVelocity.x < 0.f)
+		{
+			myRegistry.emplace_or_replace<components::MigrateClient>(entity, 0, -1);
+		}
 	}
 
 	// NPCs

@@ -37,6 +37,12 @@
     <ClInclude Include="Components\Client.hpp">
       <Filter>Components</Filter>
     </ClInclude>
+    <ClInclude Include="Components\ShadowClient.hpp">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Components\MigrateClient.hpp">
+      <Filter>Components</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">

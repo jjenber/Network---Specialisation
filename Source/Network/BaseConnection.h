@@ -9,10 +9,11 @@ namespace Network
 	class BaseConnection
 	{
 	public:
-		BaseConnection(UDPSocket& aSocket);
+		void Init(UDPSocket& aSocket);
+
 		virtual ~BaseConnection() {}
 		
-		UDPSocket& GetSocket();
+		UDPSocket* GetSocket();
 	
 		void Update(float aDeltatime);
 
@@ -20,11 +21,14 @@ namespace Network
 		bool ReadNextMessage(NetMessage& aMsg);
 		void ClearMessages();
 		bool HasMessages() const { return !myReceivedMessages.Empty(); }
+
 	protected:
 		template<class NetMessageType>
 		void SendOrEnqueue(NetMessageType& aNetMessage, const Address& aAddress);
 		
-		UDPSocket&				mySocket;
+		void Clear();
+
+		UDPSocket*				mySocket;
 		NetMessageQueue<4096>	myReceivedMessages;
 
 	private:
@@ -41,11 +45,15 @@ namespace Network
 		static_assert(std::is_base_of_v<NetMessage, NetMessageType>, "NetMessageType must derive from NetMessage");
 		if constexpr (std::is_base_of_v<ReliableNetMessage, NetMessageType>)
 		{
-			myReliableNetMessageQueue.Enqueue(aNetMessage, aAddress, 10, 100.f);
+			myReliableNetMessageQueue.Enqueue(
+				aNetMessage, 
+				aAddress, 
+				Constants::MAX_RESEND_ATTEMPTS, 
+				Constants::RESEND_WAIT_TIME_MS);
 		}
 		else
 		{
-			mySocket.Send(aNetMessage, aAddress);
+			mySocket->Send(aNetMessage, aAddress);
 		}
 	}
 }

@@ -26,14 +26,14 @@ void WorldServer::Startup()
 
 	if (myAreaServerConnection.Bind("127.0.0.1", Network::Constants::WORLD_TO_AREA_PORT))
 	{
-		myAreaServerConnection.GetSocket().SetBlocking(false);
-		std::cout << "Server is listening for area servers at " << myAreaServerConnection.GetSocket().GetBoundAddress().ToString() << std::endl;
+		myAreaServerConnection.GetSocket()->SetBlocking(false);
+		std::cout << "Server is listening for area servers at " << myAreaServerConnection.GetSocket()->GetBoundAddress().ToString() << std::endl;
 	}
 
 	if (myClientConnections.Bind("127.0.0.1", Network::Constants::WORLD_TO_CLIENT_PORT))
 	{
-		myClientConnections.GetSocket().SetBlocking(false);
-		std::cout << "Server is listening for clients at " << myClientConnections.GetSocket().GetBoundAddress().ToString() << std::endl;
+		myClientConnections.GetSocket()->SetBlocking(false);
+		std::cout << "Server is listening for clients at " << myClientConnections.GetSocket()->GetBoundAddress().ToString() << std::endl;
 	}
 }
 
@@ -80,7 +80,7 @@ void WorldServer::Update(const float aDeltatime)
 	myClientConnections.Update(aDeltatime);
 	while (myClientConnections.HasMessages())
 	{
-		
+		HandleClientMessages();
 	}
 }
 
@@ -164,6 +164,17 @@ void WorldServer::HandleAreaServerMessages()
 		}
 		break;
 	}
+
+	case Network::eNETMESSAGE_R_AS_CLIENT_MIGRATE:
+	{
+		Network::ClientMigrateMessage msg;
+		myAreaServerConnection.ReadNextMessage(msg);
+		
+		MigrateClient(myAreaServerInstances[msg.mySenderID].myRegions.front(), msg.myX, msg.myY, msg.mySenderID);
+
+		break;
+	}
+
 	default:
 		std::cout << (int)id << " unhandled message from area server" << std::endl;
 		break;
@@ -179,11 +190,7 @@ void WorldServer::OnAreaServerConnected(int aAreaServerID, const Network::Addres
 void WorldServer::HandleClientMessages()
 {
 	Network::MessageID_t id = myAreaServerConnection.Peek();
-	switch (id)
-	{
-	default:
-		std::cout << "Unhandled message from Client: " << (int)id << std::endl;
-	}
+	std::cout << "Unhandled message from Client: " << (int)id << std::endl;
 }
 
 void WorldServer::OnClientConnected(int aClientID, const Network::Address& aAddress)
@@ -211,6 +218,7 @@ void WorldServer::OnClientConnected(int aClientID, const Network::Address& aAddr
 			areaServerClientAddress = areaServer.myClientConnectionAddress;
 
 			areaServer.myClients.push_back(entt::entity(id));
+			break;
 		}
 	}
 
@@ -267,5 +275,47 @@ void WorldServer::SendRequestEntityStateRequests(const float aDeltatime)
 			instance.myLastMessage = myTime;
 			myAreaServerConnection.Send(msg, instance.myAddress);
 		}
+	}
+}
+
+void WorldServer::MigrateClient(int aCurrentArea, uint8_t aX, uint8_t aY, uint16_t aClientID)
+{
+	int x = aCurrentArea % REGION_ROW_COL + aX;
+	int y = aCurrentArea / REGION_ROW_COL + aY;
+
+	int targetRegion = x + y * REGION_ROW_COL;
+
+	AreaServerInstance& currentAreaServer = myAreaServerInstances[aCurrentArea];
+	AreaServerInstance& targetAreaServer  = myAreaServerInstances[targetRegion];
+	Client& client = myClients[aClientID];
+
+	client.myIsMigrating = true;
+	client.myRegion = targetRegion;
+
+	std::cout << "Want to migrate from " << aCurrentArea << " to " << myClients[aCurrentArea].myNextRegion << std::endl;
+
+	int token = Random::Range(1, INT_MAX);
+
+	Network::ClientEnterAreaMessage enterAreaMsg(
+		CommonUtilities::Vector3<uint16_t>(),
+		targetAreaServer.myClientConnectionAddress.GetIP(),
+		targetAreaServer.myClientConnectionAddress.GetPort(),
+		entt::id_type(client.myUniqueID),
+		targetRegion,
+		client.myAddress,
+		token);
+	
+	myAreaServerConnection.Send(enterAreaMsg, myAreaServerInstances[targetRegion].myAddress);
+	myClientConnections.Send(enterAreaMsg, client.myAddress);
+	
+	Network::ClientExitAreaMessage exitMsg(entt::id_type(client.myUniqueID));
+	myAreaServerConnection.Send(exitMsg, currentAreaServer.myAddress);
+	
+	for (int i = 0; i < currentAreaServer.myClients.size(); i++)
+	{
+		entt::entity entity = currentAreaServer.myClients[i];
+		currentAreaServer.myClients.erase(currentAreaServer.myClients.begin() + i);
+		targetAreaServer.myClients.push_back(entity);
+		break;
 	}
 }

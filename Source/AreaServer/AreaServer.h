@@ -14,6 +14,8 @@ struct ClientData
 	entt::entity myLocalID;
 	bool myIsConnected = false;
 	bool myIsValidated = false;
+	bool myIsMigrating = false;
+	bool myIsShadow    = false;
 };
 struct QueueClientItem
 {
@@ -21,6 +23,10 @@ struct QueueClientItem
 	uint32_t myUniqueID = 0;
 	CommonUtilities::Vector3<uint16_t> myPosition;
 };
+namespace components
+{
+	struct MigrateClient;
+}
 
 class AreaServer
 {
@@ -42,6 +48,7 @@ private:
 	void OnClientConnected(const Network::Address& aAddress, unsigned short aConnectionSlot);
 
 	void SyncClients(const float aDeltatime);
+	void MigrateClient(unsigned int aClientID, const components::MigrateClient& aComponent);
 
 	uint8_t myServerID = UINT8_MAX;
 
@@ -53,7 +60,6 @@ private:
 	std::array<ClientData, MAX_CLIENT_COUNT> myClientData;
 	std::vector<QueueClientItem> myQueuedClients;
 	float mySyncClientsTimer = 0.f;
-	
 
 	// World Server
 	Network::UDPSocket mySocket;

@@ -1,8 +1,9 @@
 #pragma once
+
 namespace components
 {
-	struct Client
+	struct ShadowClient
 	{
-		int myClientSlot = -1;
+
 	};
 }

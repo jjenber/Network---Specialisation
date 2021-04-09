@@ -93,6 +93,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Components\Client.hpp" />
+    <ClInclude Include="Components\MigrateClient.hpp" />
+    <ClInclude Include="Components\ShadowClient.hpp" />
     <ClInclude Include="Components\UniqueID.hpp" />
     <ClInclude Include="Components\Transform.hpp" />
     <ClInclude Include="Components\Velocity.hpp" />

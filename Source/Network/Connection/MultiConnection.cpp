@@ -2,7 +2,6 @@
 #include "MultiConnection.h"
 
 Network::MultiConnection::MultiConnection() : 
-	BaseConnection(mySocket),
 	myHandshakeID(0),
 	myMaxConnections(0)
 {
@@ -14,6 +13,7 @@ void Network::MultiConnection::Init(size_t aMaxConnected, MessageID_t aHandshake
 	SetHandshakeID(aHandshakeID);
 	SetOnConnectionCallback(aOnConnectionCallback);
 	mySocket.SetBlocking(false);
+	BaseConnection::Init(mySocket);
 }
 
 bool Network::MultiConnection::Bind(const Address& aAddress)

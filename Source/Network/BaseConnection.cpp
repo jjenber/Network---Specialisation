@@ -3,25 +3,25 @@
 
 namespace Network
 {
-	BaseConnection::BaseConnection(UDPSocket& aSocket) :
-		mySocket(aSocket)
+	void BaseConnection::Init(UDPSocket& aSocket)
 	{
-		mySocket.SetBlocking(false);
+		mySocket = &aSocket;
 	}
-
-	UDPSocket& Network::BaseConnection::GetSocket()
+	UDPSocket* Network::BaseConnection::GetSocket()
 	{
 		return mySocket;
 	}
 
 	void BaseConnection::Update(float aDeltatime)
 	{
+		if (mySocket == nullptr) return;
+
 		UpdateReliableMessageQueue(aDeltatime);
 
 		Address fromAddress;
 		char recvBuf[Constants::MAX_BUFFER_SIZE]{};
 
-		while (mySocket.Receive(recvBuf, fromAddress))
+		while (mySocket->Receive(recvBuf, fromAddress))
 		{
 			MessageID_t msgID = recvBuf[1];
 
@@ -31,19 +31,22 @@ namespace Network
 				memcpy(&msg.myMessageID, recvBuf + 1, msg.mySize);
 				myReliableNetMessageQueue.RemoveMessage(msg.mySequenceNr);
 			}
+
 			else if (msgID > eNETMESSAGE_RELIABLE_ID)
 			{
 				uint32_t sequence = 0;
-				memcpy(&sequence, recvBuf + 1 + NetMessage::Size(), sizeof(unsigned short));
+				memcpy(&sequence, recvBuf + 1 + NetMessage::Size(), sizeof(unsigned short));         // Copy out the ack sequence number.
+				
 				AcknowledgementMessage ack(msgID, sequence);
-				assert(ack.mySequenceNr != USHRT_MAX);
-				mySocket.Send(ack, fromAddress);
+				assert(ack.mySequenceNr != USHRT_MAX && "Invalid ack value.");
+				mySocket->Send(ack, fromAddress);                                                     // Return the ack sequence to the sender.
 
-				if (!myReliableNetMessageQueue.HasReceivedPreviously(fromAddress, ack.mySequenceNr))
+				if (!myReliableNetMessageQueue.HasReceivedPreviously(fromAddress, ack.mySequenceNr)) // Only enqueue if this is the first time.
 				{
 					myReceivedMessages.EnqueueReceivedBuffer(recvBuf);
 				}
 			}
+
 			else
 			{
 				OnReceivedMessage(recvBuf, fromAddress);
@@ -71,10 +74,17 @@ namespace Network
 		myReceivedMessages.Clear();
 	}
 
+	void BaseConnection::Clear()
+	{
+		myReliableNetMessageQueue.ClearReceivedSequenceCache(1.f, 0);
+	}
+
 	void BaseConnection::UpdateReliableMessageQueue(float aDeltatime)
 	{
-		myReliableNetMessageQueue.Send(mySocket);
-		myReliableNetMessageQueue.ClearReceivedSequenceCache(aDeltatime, 20.f);
-
+		if (mySocket)
+		{
+			myReliableNetMessageQueue.Send(*mySocket);
+			myReliableNetMessageQueue.ClearReceivedSequenceCache(aDeltatime, 20.f);
+		}
 	}
 }

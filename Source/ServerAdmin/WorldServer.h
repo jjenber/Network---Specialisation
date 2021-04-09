@@ -19,7 +19,7 @@ struct AreaServerInstance
 
 struct Client
 {
-	entt::entity aUniqueID;
+	entt::entity myUniqueID;
 	Network::Address myAddress;
 	int myRegion = -1;
 	int myNextRegion = -1;
@@ -47,6 +47,7 @@ private:
 	
 	void HandleClientMessages();
 	void OnClientConnected(int aClientID, const Network::Address& aAddress);
+	void MigrateClient(int aCurrentRegion, uint8_t aX, uint8_t aY, uint16_t aClientID);
 
 	std::array<AreaServerInstance, MAX_AREA_SERVERS> myAreaServerInstances;
 	std::array<Client, MAX_CLIENT_COUNT> myClients;

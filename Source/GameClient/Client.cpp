@@ -14,9 +14,7 @@
 /// 
 ///////////////////////////////////////////////////////////////////////////////
 
-Network::Client::Client() : 
-	myWorldServerConnection(myWorldServerSocket), 
-	myAreaServerConnection(myAreaServerSocket)
+Network::Client::Client()
 {}
 
 void Network::Client::Init()
@@ -24,6 +22,7 @@ void Network::Client::Init()
 	myVelocity.x = Random::Range(-1.f, 1.f);
 	myVelocity = myVelocity.GetNormalized() * 100.f;
 
+	myWorldServerConnection.Init(myWorldServerSocket);
 	myWorldServerSocket.SetBlocking(false);
 	myWorldServerAddress = Address("127.0.0.1", Constants::WORLD_TO_CLIENT_PORT);
 
@@ -92,18 +91,26 @@ void Network::Client::HandleWorldServerMessages()
 			static_cast<float>(msg.myPosition.y), 
 			static_cast<float>(msg.myPosition.z) 
 		};
+		
 		myAreaServerAddress = Address(msg.myAreaServerIP, msg.myAreaServerPort);
-		myAreaServerConnection.Connect(myAreaServerAddress, 10.f, eNETMESSAGE_CLIENT_HANDSHAKE);
+		myAreaServerConnection.Disconnect();
+		myAreaServerSocket = Network::UDPSocket();
+		myAreaServerConnection.Init(myAreaServerSocket);
+
+		if (!myAreaServerConnection.Connect(myAreaServerAddress, 10.f, eNETMESSAGE_CLIENT_HANDSHAKE))
+		{
+			std::cout << "Timed out " << std::endl;
+		}
 
 		ClientValidateTokenMessage validate;
-		validate.myToken = msg.myToken;
+		validate.myToken    = msg.myToken;
 		validate.myUniqueID = msg.myUniqueID;
 		myAreaServerConnection.Send(validate);
 		break;
 	}
 
 	default:
-		std::cout << "Unhandled message id: " << (int)id << std::endl;
+		std::cout << "Unhandled message from world server: " << (int)id << std::endl;
 		break;
 	}
 
@@ -121,7 +128,6 @@ void Network::Client::HandleAreaServerMessages()
 			ClientServerPosition msg;
 			myAreaServerConnection.ReadNextMessage(msg);
 			myPosition = msg.myPosition;
-			std::cout << "Received position from world server." << std::endl;
 			break;
 		}
 		default:

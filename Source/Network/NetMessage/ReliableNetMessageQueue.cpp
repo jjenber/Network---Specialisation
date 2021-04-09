@@ -62,6 +62,7 @@ namespace Network
 	inline void ReliableNetMessageQueue::Clear()
 	{
 		myQueueItems.clear();
+		myAckedSequenceCache.clear();
 	}
 
 	bool ReliableNetMessageQueue::HasReceivedPreviously(const Address& aAddress, unsigned short aSequenceNr)
