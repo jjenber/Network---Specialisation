@@ -6,6 +6,7 @@
 #include "../Game/Components/UniqueID.hpp"
 #include "../Game/Components/Client.hpp"
 #include "../Game/Components/MigrateClient.hpp"
+#include "../Game/Components/ShadowClient.hpp"
 #include <iostream>
 
 AreaServer::AreaServer() : 
@@ -109,11 +110,10 @@ void AreaServer::HandleWorldServerMessage(Network::MessageID_t aMessageID)
 		Network::ClientEnterAreaMessage msg;
 		myWorldServerConnection.ReadNextMessage(msg);
 
-		QueueClientItem incomingClient;
-		incomingClient.myPosition = msg.myClientState.myPosition;
-		incomingClient.myUniqueID = msg.myClientState.myUniqueID;
-		incomingClient.myVelocity = msg.myClientState.myVelocity;
-		incomingClient.myToken    = msg.myToken;
+		ShadowClient incomingClient;
+		incomingClient.myUniqueID    = msg.myClientState.myUniqueID;
+		incomingClient.myToken       = msg.myToken;
+		incomingClient.myLocalEntity = myGame.InstantiateShadowClient(incomingClient.myUniqueID, msg.myClientState.myPosition, msg.myClientState.myVelocity);
 
 		myQueuedClients.push_back(incomingClient);
 
@@ -163,21 +163,20 @@ void AreaServer::HandleClientMessage(Network::MessageID_t aMessageID)
 		Network::ClientValidateTokenMessage msg;
 		myClientConnections.ReadNextMessage(msg);
 
-		std::cout << "Validation: " << msg.myToken << " " << msg.myUniqueID << std::endl;
-
 		for (int i = 0; i < myQueuedClients.size(); i++)
 		{
-			const QueueClientItem& queuedClient = myQueuedClients[i];
+			const ShadowClient& queuedClient = myQueuedClients[i];
 
 			if (queuedClient.myToken == msg.myToken && queuedClient.myUniqueID == msg.myUniqueID)
 			{
-				entt::entity clientEntity = myGame.InstantiateClient(queuedClient.myUniqueID, queuedClient.myPosition, queuedClient.myVelocity);
+				myGame.GetRegistry().remove_if_exists<components::ShadowClient>(queuedClient.myLocalEntity);
 				
 				ClientData& clientData       = myClientData[msg.mySenderID];
-				clientData.myLocalID         = clientEntity;
+				clientData.myLocalID         = queuedClient.myLocalEntity;
 				clientData.myUniqueID        = msg.myUniqueID;
 				clientData.myIsValidated     = true;
 				clientData.myIsMigrating     = false;
+				clientData.myIsShadow        = false;
 				clientData.myLastMessageTime = myTime;
 
 				myQueuedClients.erase(myQueuedClients.begin() + i);
@@ -216,6 +215,7 @@ void AreaServer::SendEntityStates()
 {
 	std::vector<Network::EntityState> entityStates;
 	auto view = myGame.GetRegistry().view<const components::UniqueID, const components::Transform>(entt::exclude<components::Client>);
+
 	entityStates.reserve(view.size_hint());
 
 	for (auto&& [localID, uniqueID, transform] : view.each())
@@ -245,6 +245,7 @@ void AreaServer::OnClientConnected(const Network::Address& aAddress, uint16_t aC
 	myClientData[aConnectionSlot].myIsConnected = true;
 	myClientData[aConnectionSlot].myAddress = aAddress;
 	myClientData[aConnectionSlot].myLastMessageTime = myTime;
+	myClientData[aConnectionSlot].myIsShadow = true;
 }
 
 void AreaServer::SyncClients(const float aDeltatime)
@@ -255,32 +256,28 @@ void AreaServer::SyncClients(const float aDeltatime)
 		std::vector<Network::EntityState> entityStates;
 		Network::ClientServerPosition msg;
 
-		int clientID = 0;
 		auto& registry = myGame.GetRegistry();
 
-		for (const auto& data : myClientData)
+		for (auto& data : myClientData)
 		{
-			if (data.myIsConnected && data.myIsValidated)
+			if (data.myIsConnected && data.myIsValidated && !data.myIsShadow)
 			{
 				msg.myPosition = myGame.GetPosition(data.myLocalID);
 				myClientConnections.Send(msg, data.myAddress);
 
 				entityStates.push_back(Network::EntityState(msg.myPosition.x, msg.myPosition.z, data.myUniqueID));
 
-				ClientData& clientData = myClientData[clientID];
-
 				auto migrate = registry.try_get<components::MigrateClient>(data.myLocalID);
-				if (migrate && !clientData.myIsMigrating)
+				if (migrate && !data.myIsMigrating)
 				{
-					MigrateClient(clientData, *migrate);
+					MigrateClient(data, *migrate);
 					registry.remove<components::MigrateClient>(data.myLocalID);
 				}
-				else if (myTime - clientData.myLastMessageTime > Network::Constants::CLIENT_TIME_OUT_S && !clientData.myIsShadow)
+				else if (myTime - data.myLastMessageTime > Network::Constants::CLIENT_TIME_OUT_S)
 				{
-					ClientTimedOut(clientData);
+					ClientTimedOut(data);
 				}
 			}
-			++clientID;
 		}
 
 		mySyncClientsTimer = 0.f;

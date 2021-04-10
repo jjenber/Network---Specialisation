@@ -73,10 +73,10 @@ void GameArea::SetClientVelocity(entt::entity aLocalID, const CommonUtilities::V
 void GameArea::Update(const float aDeltatime)
 {
 	// Clients
-	for (auto&& [entity, transform, vel] : myRegistry.view<components::Transform, components::Velocity, components::Client>(entt::exclude<components::ShadowClient>).each())
+	for (auto&& [entity, transform, vel] : myRegistry.view<components::Transform, components::Velocity, components::Client>().each())
 	{
 		transform.myPosition += vel.myVelocity * aDeltatime;
-		
+
 		if (transform.myPosition.x > REGION_SIZEF - REGION_BUFFER_ZONE && vel.myVelocity.x > 0.f)
 		{
 			myRegistry.emplace_or_replace<components::MigrateClient>(entity, 1, 0);

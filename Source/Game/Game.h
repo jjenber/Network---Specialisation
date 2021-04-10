@@ -9,6 +9,7 @@ public:
 	entt::entity InstantiateEntity();
 	entt::entity InstantiateEntity(const CommonUtilities::Vector3f& aPosition);
 	entt::entity InstantiateClient(entt::id_type aUniqueID, const CommonUtilities::Vector3f& aPosition, const CommonUtilities::Vector3f& aVelocity);
+	entt::entity InstantiateShadowClient(entt::id_type aUniqueID, const CommonUtilities::Vector3f& aPosition, const CommonUtilities::Vector3f& aVelocity);
 
 	size_t GetEntityCount() const;
 	void SetUniqueID(const entt::id_type aLocalID, const entt::id_type aUniqueID);

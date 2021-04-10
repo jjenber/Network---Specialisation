@@ -4,6 +4,7 @@
 #include "Components\UniqueID.hpp"
 #include "Components\Client.hpp"
 #include "Components\Velocity.hpp"
+#include "Components\ShadowClient.hpp"
 
 entt::entity Game::InstantiateEntity()
 {
@@ -23,6 +24,13 @@ entt::entity Game::InstantiateClient(entt::id_type aUniqueID, const CommonUtilit
 	myRegistry.emplace<components::Client>(entity);
 	myRegistry.emplace<components::UniqueID>(entity, aUniqueID);
 	myRegistry.emplace<components::Velocity>(entity, aVelocity);
+	return entity;
+}
+
+entt::entity Game::InstantiateShadowClient(entt::id_type aUniqueID, const CommonUtilities::Vector3f& aPosition, const CommonUtilities::Vector3f& aVelocity)
+{
+	entt::entity entity = InstantiateClient(aUniqueID, aPosition, aVelocity);
+	myRegistry.emplace<components::ShadowClient>(entity);
 	return entity;
 }
 

@@ -36,7 +36,11 @@ public:
 	void Update(const float aDeltatime);
 
 	const std::array<AreaServerInstance, MAX_AREA_SERVERS>& GetAreaServerInstanceArray() const { return myAreaServerInstances; }
+	
+	const std::array<Client, MAX_CLIENT_COUNT>& GetClients() const { return myClients; };
+
 	const entt::registry& GetRegistry() const { return myGameWorld.GetRegistry(); }
+	
 	bool CanStartAreaServer() const;
 
 private:
@@ -48,6 +52,7 @@ private:
 	void HandleClientMessages();
 	void OnClientConnected(int aClientID, const Network::Address& aAddress);
 	void HandleClientMigration(const Network::ClientMigrateMessage& aMessage, uint16_t aAreaServerConnectionID);
+	
 
 	std::array<AreaServerInstance, MAX_AREA_SERVERS> myAreaServerInstances;
 	std::array<Client, MAX_CLIENT_COUNT> myClients;

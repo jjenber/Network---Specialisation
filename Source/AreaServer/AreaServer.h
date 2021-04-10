@@ -18,12 +18,11 @@ struct ClientData
 	bool myIsMigrating = false;
 	bool myIsShadow    = false;
 };
-struct QueueClientItem
+struct ShadowClient
 {
 	uint32_t myToken = 0;
 	uint32_t myUniqueID = 0;
-	CommonUtilities::Vector3f myPosition;
-	CommonUtilities::Vector3f myVelocity;
+	entt::entity myLocalEntity;
 };
 namespace components
 {
@@ -61,7 +60,7 @@ private:
 	// Clients
 	Network::MultiConnection myClientConnections;
 	std::array<ClientData, MAX_CLIENT_COUNT> myClientData;
-	std::vector<QueueClientItem> myQueuedClients;
+	std::vector<ShadowClient> myQueuedClients;
 	float mySyncClientsTimer = 0.f;
 
 	// World Server

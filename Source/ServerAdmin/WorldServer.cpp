@@ -161,7 +161,17 @@ void WorldServer::HandleAreaServerMessages()
 		for (int i = 0; i < msg.myCount; i++)
 		{
 			auto& state = msg.myData[i];
-			myGameWorld.UpdateEntityState(state.myUniqueID,  regionOffsetX + state.myX, regionOffsetY + state.myZ);
+			for (const auto& client : myClients)
+			{
+				if (client.myIsMigrating && client.myNextRegion != region)
+				{
+					continue;
+				}
+				else
+				{
+					myGameWorld.UpdateEntityState(state.myUniqueID,  regionOffsetX + state.myX, regionOffsetY + state.myZ);
+				}
+			}
 		}
 		break;
 	}
@@ -300,7 +310,7 @@ void WorldServer::OnClientConnected(int aClientID, const Network::Address& aAddr
 	message.myClientState.myAreaServerPort = areaServerClientAddress.GetPort();
 	message.myClientState.myUniqueID       = entt::id_type(id);
 	message.myClientState.myRegion         = region;
-	message.myClientState.myClientAddress = aAddress;
+	message.myClientState.myClientAddress  = aAddress;
 
 	myClientConnections.Send(message, aAddress);
 	myAreaServerConnection.Send(message, areaServerAddress);
