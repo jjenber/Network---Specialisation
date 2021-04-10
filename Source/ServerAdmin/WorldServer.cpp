@@ -183,12 +183,14 @@ void WorldServer::HandleAreaServerMessages()
 
 		AreaServerInstance& server = myAreaServerInstances[msg.mySenderID];
 		myGameWorld.DestroyEntity(entt::entity(msg.myClientUniqueID));
+
 		int index = -1;
 		for (int i = 0; i < server.myClients.size(); i++)
 		{
 			if (static_cast<uint32_t>(server.myClients[i]) == msg.myClientUniqueID)
 			{
 				server.myClients.erase(server.myClients.begin() + i);
+				std::cout << "Client timed out" << std::endl;
 				break;
 			}
 		};
@@ -218,7 +220,7 @@ void WorldServer::HandleClientMessages()
 		Network::ReliableNetMessage msg;
 		myClientConnections.ReadNextMessage(msg);
 		
-		Client& client                        = myClients[msg.mySenderID];
+		Client& client = myClients[msg.mySenderID];
 		client.myIsMigrating = false;
 		
 		if (client.myNextRegion >= 0)
@@ -227,20 +229,22 @@ void WorldServer::HandleClientMessages()
 			AreaServerInstance& targetAreaServer  = myAreaServerInstances[client.myNextRegion];
 
 			Network::ClientExitAreaMessage exitMsg(entt::id_type(client.myUniqueID));
-
 			myAreaServerConnection.Send(exitMsg, myAreaServerInstances[client.myRegion].myAddress);
 
 			for (int i = 0; i < currentAreaServer.myClients.size(); i++)
 			{
 				entt::entity entity = currentAreaServer.myClients[i];
+				if (entity == client.myUniqueID)
+				{
+					currentAreaServer.myClients.erase(currentAreaServer.myClients.begin() + i);
+					targetAreaServer.myClients.push_back(entity);
+				}
 
-				currentAreaServer.myClients.erase(currentAreaServer.myClients.begin() + i);
-				targetAreaServer.myClients.push_back(entity);
 				break;
 			}
 
-			client.myRegion      = client.myNextRegion;
-			client.myNextRegion  = -1;
+			client.myRegion     = client.myNextRegion;
+			client.myNextRegion = -1;
 		}
 
 		break;
@@ -262,7 +266,7 @@ void WorldServer::OnClientConnected(int aClientID, const Network::Address& aAddr
 	aPosition.z = Random::Range(0.f, REGION_SIZEF);
 	
 	entt::entity id = myGameWorld.InstantiateClient(aPosition);
-	myClients[aClientID].myLocalID = id;
+	myClients[aClientID].myUniqueID = id;
 
 	int region = -1;
 

@@ -19,12 +19,16 @@ bool AreaServer::Startup()
 {
 	myWorldServerConnection.Init(mySocket);
 	myWorldServerAddress = Network::Address("127.0.0.1", Network::Constants::WORLD_TO_AREA_PORT);
-	myIsRunning = myWorldServerConnection.Connect(myWorldServerAddress, 3.f, Network::eNETMESSAGE_AS_HANDSHAKE);
+
+	myIsRunning = myWorldServerConnection.Connect(
+		myWorldServerAddress,
+		Network::Constants::RESEND_WAIT_TIME_MS, 
+		Network::eNETMESSAGE_AS_HANDSHAKE);
 
 	myClientConnections.Init(
 		MAX_CLIENT_COUNT,
 		Network::eNETMESSAGE_CLIENT_HANDSHAKE,
-		[&](const Network::Address& aAddress, unsigned short aConnectionSlot)
+		[&](const Network::Address& aAddress, unsigned short aConnectionSlot) // Callback for when 
 		{
 			OnClientConnected(aAddress, aConnectionSlot);
 		});
@@ -33,7 +37,6 @@ bool AreaServer::Startup()
 	{
 		std::cout << "My inbounding client address: " << myClientConnections.GetSocket()->GetBoundAddress().ToString() << std::endl;
 	}
-
 
 	return myIsRunning;
 }
@@ -120,13 +123,16 @@ void AreaServer::HandleWorldServerMessage(Network::MessageID_t aMessageID)
 	{
 		Network::ClientExitAreaMessage msg;
 		myWorldServerConnection.ReadNextMessage(msg);
-
-		int connectionID = myGame.ChangeClientIntoShadowEntity(msg.myUniqueID);
-		if (connectionID != -1)
+		
+		myGame.DestroyEntity(msg.myUniqueID);
+		for (int i = 0; i < myClientData.size(); i++)
 		{
-			myClientData[connectionID].myIsShadow = true;
+			if (myClientData[i].myUniqueID == msg.myUniqueID)
+			{
+				myClientData[i] = ClientData{};
+				break;
+			}
 		}
-
 	}	break;
 
 	default:
@@ -269,7 +275,7 @@ void AreaServer::SyncClients(const float aDeltatime)
 					MigrateClient(clientData, *migrate);
 					registry.remove<components::MigrateClient>(data.myLocalID);
 				}
-				else if (myTime - clientData.myLastMessageTime > Network::Constants::CLIENT_TIME_OUT_S)
+				else if (myTime - clientData.myLastMessageTime > Network::Constants::CLIENT_TIME_OUT_S && !clientData.myIsShadow)
 				{
 					ClientTimedOut(clientData);
 				}

@@ -133,9 +133,32 @@ void Editor::DrawMenuControls()
 		myWorldServer.InstantiateAreaServers();
 	}
 	ImGui::SameLine();
+
+	bool hasAreaServers = false;
+	for (auto& server : myWorldServer.GetAreaServerInstanceArray())
+	{
+		if (server.myStatus == eAreaServerStatus::Running)
+		{
+			hasAreaServers = true;
+			break;
+		}
+	}
+
+	if (!hasAreaServers)
+	{
+		ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+		ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
+	}
+
 	if (ImGui::Button("Instantiate Mock Client"))
 	{
 		InstantiateMockClient();
+	}
+
+	if (!hasAreaServers)
+	{
+		ImGui::PopItemFlag();
+		ImGui::PopStyleVar();
 	}
 }
 

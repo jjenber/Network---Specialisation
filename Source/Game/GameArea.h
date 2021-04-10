@@ -15,7 +15,8 @@ public:
 	std::vector<entt::id_type> GetUnsyncedIDs() const;
 	std::vector<entt::id_type> GetUniqueIDs() const;
 
-	int ChangeClientIntoShadowEntity(entt::id_type aUniqueID);
+	void DestroyEntity(entt::id_type aUniqueID);
+
 	void SetClientVelocity(entt::entity aUniqueID, const CommonUtilities::Vector3f& aVelocity);
 private:
 	int myRegion = -1;

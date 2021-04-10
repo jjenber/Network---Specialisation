@@ -54,19 +54,15 @@ std::vector<entt::id_type> GameArea::GetUniqueIDs() const
 	return result;
 }
 
-int GameArea::ChangeClientIntoShadowEntity(entt::id_type aUniqueID)
+void GameArea::DestroyEntity(entt::id_type aUniqueID)
 {
-	for (auto&& [entity, uniqueID, client] : myRegistry.view<components::UniqueID, components::Client>().each())
+	for (auto&& [entity, uniqueID] : myRegistry.view<components::UniqueID, components::Client>().each())
 	{
 		if (uniqueID.myUniqueID == aUniqueID)
 		{
-			int slot = client.myClientSlot;
-			myRegistry.remove<components::Client>(entity);
-			myRegistry.emplace<components::ShadowClient>(entity);
-			return slot;
+			myRegistry.destroy(entity);
 		}
 	}
-	return -1;
 }
 
 void GameArea::SetClientVelocity(entt::entity aLocalID, const CommonUtilities::Vector3f& aVelocity)
@@ -77,7 +73,7 @@ void GameArea::SetClientVelocity(entt::entity aLocalID, const CommonUtilities::V
 void GameArea::Update(const float aDeltatime)
 {
 	// Clients
-	for (auto&& [entity, transform, vel, client] : myRegistry.view<components::Transform, components::Velocity, components::Client>(entt::exclude<components::ShadowClient>).each())
+	for (auto&& [entity, transform, vel] : myRegistry.view<components::Transform, components::Velocity, components::Client>(entt::exclude<components::ShadowClient>).each())
 	{
 		transform.myPosition += vel.myVelocity * aDeltatime;
 		

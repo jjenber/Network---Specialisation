@@ -156,17 +156,6 @@ namespace Network
 		unsigned char myClientSlot = UCHAR_MAX;
 	};
 
-	class ChatMessage : public NetMessage
-	{
-	public:
-		ChatMessage(const std::string& aChatMessage = std::string());
-		void SetText(const std::string& aChatMessage);
-	
-	private:
-		char myMessage[Constants::MAX_CHAT_LENGTH];
-		unsigned short myLength = 0;
-	};
-
 	class AcknowledgementMessage : public NetMessage
 	{
 	public:

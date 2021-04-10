@@ -20,7 +20,6 @@ struct AreaServerInstance
 struct Client
 {
 	entt::entity myUniqueID;
-	entt::entity myLocalID;
 	Network::Address myAddress;
 	int myRegion = -1;
 	int myNextRegion = -1;
