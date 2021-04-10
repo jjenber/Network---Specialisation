@@ -62,6 +62,7 @@ void Network::Client::Update(float aDeltatime)
 		{
 			HandleAreaServerMessages();
 		}
+		myAreaServerConnection.ClearMessages();
 
 		if (mySendMoveTimer > 0.4)
 		{
@@ -84,15 +85,10 @@ void Network::Client::HandleWorldServerMessages()
 		ClientEnterAreaMessage msg;
 		myWorldServerConnection.ReadNextMessage(msg);
 		
-		myUniqueID = msg.myUniqueID;
-		myPosition = CommonUtilities::Vector3f
-		{ 
-			static_cast<float>(msg.myPosition.x), 
-			static_cast<float>(msg.myPosition.y), 
-			static_cast<float>(msg.myPosition.z) 
-		};
+		myUniqueID = msg.myClientState.myUniqueID;
+		myPosition = msg.myClientState.myPosition;
 		
-		myAreaServerAddress = Address(msg.myAreaServerIP, msg.myAreaServerPort);
+		myAreaServerAddress = Address(msg.myClientState.myAreaServerIP, msg.myClientState.myAreaServerPort);
 		myAreaServerConnection.Disconnect();
 		myAreaServerSocket = Network::UDPSocket();
 		myAreaServerConnection.Init(myAreaServerSocket);
@@ -104,7 +100,7 @@ void Network::Client::HandleWorldServerMessages()
 
 		ClientValidateTokenMessage validate;
 		validate.myToken    = msg.myToken;
-		validate.myUniqueID = msg.myUniqueID;
+		validate.myUniqueID = myUniqueID;
 		myAreaServerConnection.Send(validate);
 		break;
 	}
@@ -128,6 +124,7 @@ void Network::Client::HandleAreaServerMessages()
 			ClientServerPosition msg;
 			myAreaServerConnection.ReadNextMessage(msg);
 			myPosition = msg.myPosition;
+
 			break;
 		}
 		default:

@@ -17,19 +17,13 @@ entt::entity Game::InstantiateEntity(const cu::Vector3f& aPosition)
 	return entity;
 }
 
-entt::entity Game::InstantiateClient(const CommonUtilities::Vector3f& aPosition, entt::id_type aUniqueID)
+entt::entity Game::InstantiateClient(entt::id_type aUniqueID, const CommonUtilities::Vector3f& aPosition, const CommonUtilities::Vector3f& aVelocity)
 {
 	entt::entity entity = InstantiateEntity(aPosition);
 	myRegistry.emplace<components::Client>(entity);
 	myRegistry.emplace<components::UniqueID>(entity, aUniqueID);
-	myRegistry.emplace<components::Velocity>(entity);
+	myRegistry.emplace<components::Velocity>(entity, aVelocity);
 	return entity;
-}
-
-entt::entity Game::InstantiateClient(const CommonUtilities::Vector3<uint16_t>& aPosition, entt::id_type aUniqueID)
-{
-	CommonUtilities::Vector3f pos{ static_cast<float>(aPosition.x),static_cast<float>(aPosition.y),static_cast<float>(aPosition.z) };
-	return InstantiateClient(pos, aUniqueID);
 }
 
 size_t Game::GetEntityCount() const
@@ -42,6 +36,15 @@ CommonUtilities::Vector3f Game::GetPosition(entt::entity aID) const
 	if (myRegistry.valid(aID))
 	{
 		return myRegistry.get<components::Transform>(aID).myPosition;
+	}
+	return CommonUtilities::Vector3f();
+}
+
+CommonUtilities::Vector3f Game::GetVelocity(entt::entity aID) const
+{
+	if (myRegistry.valid(aID))
+	{
+		return myRegistry.get<components::Velocity>(aID).myVelocity;
 	}
 	return CommonUtilities::Vector3f();
 }

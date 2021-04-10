@@ -16,7 +16,7 @@ public:
 	
 	void InstantiateEntities(const int aEntityCount, std::vector<entt::entity>& aUniqueIDs);
 
-	entt::id_type InstantiateClient(const CommonUtilities::Vector3f& aPosition);
+	entt::entity InstantiateClient(const CommonUtilities::Vector3f& aPosition);
 	
 	int GetUnassignedRegionIndex() const;
 	
@@ -25,6 +25,8 @@ public:
 	void UpdateEntityState(entt::id_type aID, float myX, float myZ);
 	
 	const entt::registry& GetRegistry() const { return myWorldRegistry; };
+
+	CommonUtilities::Vector3f GetPosition(entt::entity aEntity) const;
 
 private:
 	entt::registry myWorldRegistry;

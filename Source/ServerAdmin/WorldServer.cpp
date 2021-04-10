@@ -69,12 +69,13 @@ void WorldServer::InstantiateAreaServers()
 void WorldServer::Update(const float aDeltatime)
 {
 	myTime += aDeltatime;
+
 	myAreaServerConnection.Update(aDeltatime);
 	while (myAreaServerConnection.HasMessages())
 	{
 		HandleAreaServerMessages();
 	}
-	myAreaServerConnection.ClearMessages();
+
 	SendRequestEntityStateRequests(aDeltatime);
 
 	myClientConnections.Update(aDeltatime);
@@ -169,8 +170,8 @@ void WorldServer::HandleAreaServerMessages()
 	{
 		Network::ClientMigrateMessage msg;
 		myAreaServerConnection.ReadNextMessage(msg);
-		
-		MigrateClient(myAreaServerInstances[msg.mySenderID].myRegions.front(), msg.myX, msg.myY, msg.mySenderID);
+
+		HandleClientMigration(msg, msg.mySenderID);
 
 		break;
 	}
@@ -203,7 +204,8 @@ void WorldServer::OnClientConnected(int aClientID, const Network::Address& aAddr
 	aPosition.x = Random::Range(0.f, REGION_SIZEF);
 	aPosition.z = Random::Range(0.f, REGION_SIZEF);
 	
-	entt::id_type id = myGameWorld.InstantiateClient(aPosition);
+	entt::entity id = myGameWorld.InstantiateClient(aPosition);
+	myClients[aClientID].myLocalID = id;
 
 	int region = -1;
 
@@ -217,7 +219,7 @@ void WorldServer::OnClientConnected(int aClientID, const Network::Address& aAddr
 			areaServerAddress       = areaServer.myAddress;
 			areaServerClientAddress = areaServer.myClientConnectionAddress;
 
-			areaServer.myClients.push_back(entt::entity(id));
+			areaServer.myClients.push_back(id);
 			break;
 		}
 	}
@@ -228,14 +230,16 @@ void WorldServer::OnClientConnected(int aClientID, const Network::Address& aAddr
 	client.myRegion = region;
 	client.myAddress = aAddress;
 
-	Network::ClientEnterAreaMessage message(
-		CommonUtilities::Vector3<uint16_t>{ static_cast<uint16_t>(aPosition.x), static_cast<uint16_t>(aPosition.y), static_cast<uint16_t>(aPosition.z) }, 
-		areaServerClientAddress.GetIP(), 
-		areaServerClientAddress.GetPort(),
-		id,
-		0,
-		aAddress,
-		Random::Range(1, INT_MAX));
+	int token = Random::Range(1, INT_MAX);
+
+	Network::ClientEnterAreaMessage message;
+	message.myToken = token;
+	message.myClientState.myPosition       = aPosition;
+	message.myClientState.myAreaServerIP   = areaServerClientAddress.GetIP();
+	message.myClientState.myAreaServerPort = areaServerClientAddress.GetPort();
+	message.myClientState.myUniqueID       = entt::id_type(id);
+	message.myClientState.myRegion         = region;
+	message.myClientState.myClientAddress = aAddress;
 
 	myClientConnections.Send(message, aAddress);
 	myAreaServerConnection.Send(message, areaServerAddress);
@@ -278,32 +282,51 @@ void WorldServer::SendRequestEntityStateRequests(const float aDeltatime)
 	}
 }
 
-void WorldServer::MigrateClient(int aCurrentArea, uint8_t aX, uint8_t aY, uint16_t aClientID)
+void WorldServer::HandleClientMigration(const Network::ClientMigrateMessage& aMessage, uint16_t aAreaServerConnectionID)
 {
-	int x = aCurrentArea % REGION_ROW_COL + aX;
-	int y = aCurrentArea / REGION_ROW_COL + aY;
+	int currentArea = myAreaServerInstances[aAreaServerConnectionID].myRegions.front();
+
+	int x = currentArea % REGION_ROW_COL + aMessage.myX;
+	int y = currentArea / REGION_ROW_COL + aMessage.myY;
 
 	int targetRegion = x + y * REGION_ROW_COL;
 
-	AreaServerInstance& currentAreaServer = myAreaServerInstances[aCurrentArea];
+	AreaServerInstance& currentAreaServer = myAreaServerInstances[currentArea];
 	AreaServerInstance& targetAreaServer  = myAreaServerInstances[targetRegion];
-	Client& client = myClients[aClientID];
+
+	int clientindex = 0;
+	for (int i = 0; i < myClients.size(); i++)
+	{
+		if (static_cast<uint32_t>(myClients[i].myUniqueID) == aMessage.myClientUniqueID)
+		{
+			clientindex = i;
+			break;
+		}
+	}
+	assert(clientindex >= 0 && "Failed to find client.");
+
+	Client& client = myClients[clientindex];
 
 	client.myIsMigrating = true;
 	client.myRegion = targetRegion;
 
-	std::cout << "Want to migrate from " << aCurrentArea << " to " << myClients[aCurrentArea].myNextRegion << std::endl;
+	std::cout << "Want to migrate from " << currentArea << " to " << targetRegion << std::endl;
 
 	int token = Random::Range(1, INT_MAX);
 
-	Network::ClientEnterAreaMessage enterAreaMsg(
-		CommonUtilities::Vector3<uint16_t>(),
-		targetAreaServer.myClientConnectionAddress.GetIP(),
-		targetAreaServer.myClientConnectionAddress.GetPort(),
-		entt::id_type(client.myUniqueID),
-		targetRegion,
-		client.myAddress,
-		token);
+	CommonUtilities::Vector3f localPos = aMessage.myPosition;
+	localPos.x -= aMessage.myX * REGION_SIZE;
+	localPos.z -= aMessage.myY * REGION_SIZE;
+	
+	Network::ClientEnterAreaMessage enterAreaMsg;
+	enterAreaMsg.myToken = token;
+	enterAreaMsg.myClientState.myPosition       = localPos;
+	enterAreaMsg.myClientState.myVelocity       = aMessage.myVelocity;
+	enterAreaMsg.myClientState.myUniqueID       = aMessage.myClientUniqueID;
+	enterAreaMsg.myClientState.myAreaServerIP   = targetAreaServer.myClientConnectionAddress.GetIP();
+	enterAreaMsg.myClientState.myAreaServerPort = targetAreaServer.myClientConnectionAddress.GetPort();
+	enterAreaMsg.myClientState.myRegion         = targetRegion;
+	enterAreaMsg.myClientState.myClientAddress  = client.myAddress;
 	
 	myAreaServerConnection.Send(enterAreaMsg, myAreaServerInstances[targetRegion].myAddress);
 	myClientConnections.Send(enterAreaMsg, client.myAddress);

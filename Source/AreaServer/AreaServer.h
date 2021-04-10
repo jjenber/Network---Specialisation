@@ -21,7 +21,8 @@ struct QueueClientItem
 {
 	uint32_t myToken = 0;
 	uint32_t myUniqueID = 0;
-	CommonUtilities::Vector3<uint16_t> myPosition;
+	CommonUtilities::Vector3f myPosition;
+	CommonUtilities::Vector3f myVelocity;
 };
 namespace components
 {
@@ -45,10 +46,10 @@ private:
 	void SendIDRequests();
 	void SendEntityStates();
 
-	void OnClientConnected(const Network::Address& aAddress, unsigned short aConnectionSlot);
+	void OnClientConnected(const Network::Address& aAddress, uint16_t aConnectionSlot);
 
 	void SyncClients(const float aDeltatime);
-	void MigrateClient(unsigned int aClientID, const components::MigrateClient& aComponent);
+	void MigrateClient(ClientData& aClientData, const components::MigrateClient& aComponent);
 
 	uint8_t myServerID = UINT8_MAX;
 

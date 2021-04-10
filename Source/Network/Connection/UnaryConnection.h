@@ -7,6 +7,7 @@ namespace Network
 	{
 	public:
 		bool Connect(const Address& aAddress, float aTimeoutInSeconds, eNetMessageID aHandshakeID);
+		
 		void Disconnect();
 
 		template<class NetMessageType>
@@ -19,10 +20,10 @@ namespace Network
 	private:
 		void OnReceivedMessage(char aBuffer[Constants::MAX_BUFFER_SIZE], const Network::Address& aFromAddress);
 
-		eConnectionStatus	myConnectionStatus;
 		Address				myConnectedAddress;
 		Address				myAddress;
-		ClientSlot_t		mySlot;
+		eConnectionStatus	myConnectionStatus = eConnectionStatus::Disconnected;
+		ClientSlot_t		mySlot = std::numeric_limits<ClientSlot_t>::max();
 	};
 
 	template<class NetMessageType>

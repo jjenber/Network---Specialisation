@@ -234,7 +234,7 @@ void Editor::InstantiateMockClient() const
 		NULL,                        // Process handle not inheritable
 		NULL,                        // Thread handle not inheritable
 		FALSE,                       // Set handle inheritance to FALSE
-		CREATE_NEW_CONSOLE,          // No creation flags
+		CREATE_NEW_CONSOLE,          // Creation flags
 		NULL,                        // Use parent's environment block
 		NULL,                        // Use parent's starting directory 
 		&si,                         // Pointer to STARTUPINFO structure

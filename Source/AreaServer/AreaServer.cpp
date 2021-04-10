@@ -104,12 +104,13 @@ void AreaServer::HandleWorldServerMessage(Network::MessageID_t aMessageID)
 		Network::ClientEnterAreaMessage msg;
 		myWorldServerConnection.ReadNextMessage(msg);
 
-		QueueClientItem queue;
-		queue.myPosition = msg.myPosition;
-		queue.myUniqueID = msg.myUniqueID;
-		queue.myToken    = msg.myToken;
+		QueueClientItem incomingClient;
+		incomingClient.myPosition = msg.myClientState.myPosition;
+		incomingClient.myUniqueID = msg.myClientState.myUniqueID;
+		incomingClient.myVelocity = msg.myClientState.myVelocity;
+		incomingClient.myToken    = msg.myToken;
 
-		myQueuedClients.push_back(queue);
+		myQueuedClients.push_back(incomingClient);
 
 	}	break;
 
@@ -154,14 +155,20 @@ void AreaServer::HandleClientMessage(Network::MessageID_t aMessageID)
 		myClientConnections.ReadNextMessage(msg);
 
 		std::cout << "Validation: " << msg.myToken << " " << msg.myUniqueID << std::endl;
+
 		for (int i = 0; i < myQueuedClients.size(); i++)
 		{
-			if (myQueuedClients[i].myToken == msg.myToken && myQueuedClients[i].myUniqueID == msg.myUniqueID)
+			const QueueClientItem& queuedClient = myQueuedClients[i];
+
+			if (queuedClient.myToken == msg.myToken && queuedClient.myUniqueID == msg.myUniqueID)
 			{
-				entt::entity clientEntity = myGame.InstantiateClient(myQueuedClients[i].myPosition, myQueuedClients[i].myUniqueID);
-				myClientData[msg.mySenderID].myUniqueID = msg.myUniqueID;
-				myClientData[msg.mySenderID].myLocalID = clientEntity;
-				myClientData[msg.mySenderID].myIsValidated = true;
+				entt::entity clientEntity = myGame.InstantiateClient(queuedClient.myUniqueID, queuedClient.myPosition, queuedClient.myVelocity);
+				
+				ClientData& clientData   = myClientData[msg.mySenderID];
+				clientData.myLocalID     = clientEntity;
+				clientData.myUniqueID    = msg.myUniqueID;
+				clientData.myIsValidated = true;
+				clientData.myIsMigrating = false;
 
 				myQueuedClients.erase(myQueuedClients.begin() + i);
 				break;
@@ -198,7 +205,7 @@ void AreaServer::SendIDRequests()
 void AreaServer::SendEntityStates()
 {
 	std::vector<Network::EntityState> entityStates;
-	auto view = myGame.GetRegistry().view<const components::UniqueID, const components::Transform>();
+	auto view = myGame.GetRegistry().view<const components::UniqueID, const components::Transform>(entt::exclude<components::Client>);
 	entityStates.reserve(view.size_hint());
 
 	for (auto&& [localID, uniqueID, transform] : view.each())
@@ -211,18 +218,18 @@ void AreaServer::SendEntityStates()
 	int entityIndex = 0;
 	while (entityIndex < entityStates.size())
 	{
-		int count = 0;
-		for (int i = 0; i < Network::EntityStatesMessage::MaxCount && entityIndex < entityStates.size(); i++, count++, entityIndex++)
+		int entityCount = 0;
+		for (int i = 0; i < Network::EntityStatesMessage::MaxCount && entityIndex < entityStates.size(); i++, entityCount++, entityIndex++)
 		{
 			message.myData[i] = entityStates[entityIndex];
 		}
-		message.SetCount(static_cast<uint8_t>(count));
+		message.SetCount(static_cast<uint8_t>(entityCount));
 
 		myWorldServerConnection.Send(message);
 	}
 }
 
-void AreaServer::OnClientConnected(const Network::Address& aAddress, unsigned short aConnectionSlot)
+void AreaServer::OnClientConnected(const Network::Address& aAddress, uint16_t aConnectionSlot)
 {
 	std::cout << "Client connected" << std::endl;
 	myClientData[aConnectionSlot].myIsConnected = true;
@@ -232,7 +239,7 @@ void AreaServer::OnClientConnected(const Network::Address& aAddress, unsigned sh
 void AreaServer::SyncClients(const float aDeltatime)
 {
 	mySyncClientsTimer += aDeltatime;
-	if (mySyncClientsTimer >= 0.2f)
+	if (mySyncClientsTimer >= 0.1f)
 	{
 		std::vector<Network::EntityState> entityStates;
 		Network::ClientServerPosition msg;
@@ -250,11 +257,11 @@ void AreaServer::SyncClients(const float aDeltatime)
 				entityStates.push_back(Network::EntityState(msg.myPosition.x, msg.myPosition.z, data.myUniqueID));
 
 				auto migrate = registry.try_get<components::MigrateClient>(data.myLocalID);
-				
+
 				if (migrate && !myClientData[clientID].myIsMigrating)
 				{
-					MigrateClient(clientID, *migrate);
-					std::cout << "Migrate client" << std::endl;
+					MigrateClient(myClientData[clientID], *migrate);
+					registry.remove<components::MigrateClient>(data.myLocalID);
 				}
 			}
 			++clientID;
@@ -281,12 +288,15 @@ void AreaServer::SyncClients(const float aDeltatime)
 	}
 }
 
-void AreaServer::MigrateClient(unsigned int aClientID, const components::MigrateClient& aComponent)
+void AreaServer::MigrateClient(ClientData& aClientData, const components::MigrateClient& aComponent)
 {
-	if (!myClientData[aClientID].myIsMigrating)
+	if (!aClientData.myIsMigrating)
 	{
-		Network::ClientMigrateMessage msg(aComponent.myX, aComponent.myY);
+		aClientData.myIsMigrating = true;
+
+		Network::ClientMigrateMessage msg(aClientData.myUniqueID, aComponent.myX, aComponent.myY);
+		msg.myPosition = myGame.GetPosition(aClientData.myLocalID);
+		msg.myVelocity = myGame.GetVelocity(aClientData.myLocalID);
 		myWorldServerConnection.Send(msg);
-		myClientData[aClientID].myIsMigrating = true;
 	}
 }

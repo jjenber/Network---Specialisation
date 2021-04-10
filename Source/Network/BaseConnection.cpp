@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "BaseConnection.h"
+#include <cassert>
 
 namespace Network
 {
@@ -14,6 +15,8 @@ namespace Network
 
 	void BaseConnection::Update(float aDeltatime)
 	{
+		myReceivedMessages.Clear(); // Prepare the queue for all incoming messages.
+
 		if (mySocket == nullptr) return;
 
 		UpdateReliableMessageQueue(aDeltatime);

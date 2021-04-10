@@ -17,14 +17,14 @@ void GameWorld::InstantiateEntities(const int aEntityCount, std::vector<entt::en
 	}
 }
 
-entt::id_type GameWorld::InstantiateClient(const CommonUtilities::Vector3f& aPosition)
+entt::entity GameWorld::InstantiateClient(const CommonUtilities::Vector3f& aPosition)
 {
 	entt::entity entity = myWorldRegistry.create();
 
 	myWorldRegistry.emplace<components::Client>(entity);
 	myWorldRegistry.emplace<components::Transform>(entity);
 
-	return static_cast<entt::id_type>(entity);
+	return entity;
 }
 
 int GameWorld::GetUnassignedRegionIndex() const
@@ -51,3 +51,11 @@ void GameWorld::UpdateEntityState(entt::id_type aID, float myX, float myZ)
 	transform.myPosition.x = myX;
 	transform.myPosition.z = myZ;
 }
+
+CommonUtilities::Vector3f GameWorld::GetPosition(entt::entity aEntity) const
+{
+	return 
+		myWorldRegistry.valid(aEntity) ?
+		myWorldRegistry.get<components::Transform>(aEntity).myPosition :
+		CommonUtilities::Vector3f();
+};

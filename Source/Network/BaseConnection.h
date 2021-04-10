@@ -28,7 +28,7 @@ namespace Network
 		
 		void Clear();
 
-		UDPSocket*				mySocket;
+		UDPSocket*				mySocket = nullptr;
 		NetMessageQueue<4096>	myReceivedMessages;
 
 	private:

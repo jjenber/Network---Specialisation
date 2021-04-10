@@ -1,6 +1,9 @@
 #include "Common.h"
 #include "Connection/UnaryConnection.h"
 #include "../Game/Entt/entt.hpp"
+
+#include <atomic>
+
 namespace Network
 {
 	class Client

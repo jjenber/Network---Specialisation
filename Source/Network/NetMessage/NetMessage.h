@@ -259,29 +259,27 @@ namespace Network
 		Address myClientConnectionAddress;
 	};
 
-	class ClientEnterAreaMessage : public ReliableNetMessage
+	struct ClientState
 	{
-	public:
-		ClientEnterAreaMessage(const CommonUtilities::Vector3<uint16_t>& aPosition = CommonUtilities::Vector3<uint16_t>(), uint32_t aAreaServerIP = 0, uint32_t aAreaServerPort = 0, uint32_t aUniqueID = 0, uint8_t aRegion = 0, const Address& aClientAddress = Address(), uint32_t aToken = 0) 
-			: ReliableNetMessage(eNETMESSAGE_R_CLIENT_ENTER_AREA),
-			myPosition(aPosition),
-			myAreaServerIP(aAreaServerIP),
-			myAreaServerPort(aAreaServerPort),
-			myRegion(aRegion),
-			myUniqueID(aUniqueID),
-			myToken(aToken),
-			myClientAddress(aClientAddress)
-		{
-			mySize = GetSizeOfMessage<ClientEnterAreaMessage>();
-		}
-
-		CommonUtilities::Vector3<uint16_t> myPosition;
+		CommonUtilities::Vector3f myPosition;
+		CommonUtilities::Vector3f myVelocity;
 		Address  myClientAddress;
 		uint32_t myUniqueID;
 		uint32_t myAreaServerIP;
 		uint32_t myAreaServerPort;
-		uint32_t myToken;
 		uint8_t  myRegion = UCHAR_MAX;
+	};
+
+	class ClientEnterAreaMessage : public ReliableNetMessage
+	{
+	public:
+		ClientEnterAreaMessage(const ClientState& aClientState = {}, uint32_t aToken = 0)
+			: ReliableNetMessage(eNETMESSAGE_R_CLIENT_ENTER_AREA), myClientState(aClientState), myToken(aToken)
+		{
+			mySize = GetSizeOfMessage<ClientEnterAreaMessage>();
+		}
+		uint32_t myToken;
+		ClientState myClientState;
 	};
 
 	class ClientExitAreaMessage : public ReliableNetMessage
@@ -313,14 +311,17 @@ namespace Network
 	class ClientMigrateMessage : public ReliableNetMessage
 	{
 	public:
-		ClientMigrateMessage(uint8_t aX = UINT8_MAX, uint8_t aY = UINT8_MAX)
+		ClientMigrateMessage(uint32_t aClientUniqueID = UINT32_MAX, uint8_t aX = UINT8_MAX, uint8_t aY = UINT8_MAX)
 			: ReliableNetMessage(eNETMESSAGE_R_AS_CLIENT_MIGRATE),
+			  myClientUniqueID(aClientUniqueID),
 			  myX(aX), 
 			  myY(aY) 
 		{
 			mySize = GetSizeOfMessage<ClientMigrateMessage>();
 		};
-
+		uint32_t myClientUniqueID;
+		CommonUtilities::Vector3f myPosition;
+		CommonUtilities::Vector3f myVelocity;
 		uint8_t myX;
 		uint8_t myY;
 	};
