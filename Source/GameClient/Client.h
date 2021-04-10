@@ -3,6 +3,8 @@
 #include "../Game/Entt/entt.hpp"
 
 #include <atomic>
+#include <thread>
+#include <mutex>
 
 namespace Network
 {
@@ -21,7 +23,6 @@ namespace Network
 		void HandleWorldServerMessages();
 		void HandleAreaServerMessages();
 
-
 		UDPSocket myWorldServerSocket;
 		Network::UnaryConnection myWorldServerConnection;
 		Network::Address myWorldServerAddress;
@@ -35,6 +36,10 @@ namespace Network
 
 		CommonUtilities::Vector3f myPosition;
 		CommonUtilities::Vector3f myVelocity;
+
+		std::atomic_bool myMigrationInProcess = false;
+		std::mutex myMutex;
+		std::thread myMigrateThread;
 
 		float mySendMoveTimer = 0;
 		int myClientSlot = INT_MAX;

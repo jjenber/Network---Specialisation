@@ -22,6 +22,7 @@ namespace Network
 		void ClearMessages();
 		bool HasMessages() const { return !myReceivedMessages.Empty(); }
 
+		bool HasUnackedMessages();
 	protected:
 		template<class NetMessageType>
 		void SendOrEnqueue(NetMessageType& aNetMessage, const Address& aAddress);

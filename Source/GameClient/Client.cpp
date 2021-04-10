@@ -48,6 +48,8 @@ void Network::Client::Update(float aDeltatime)
 {
 	mySendMoveTimer += aDeltatime;
 
+	std::unique_lock<std::mutex> lock(myMutex);
+
 	myWorldServerConnection.Update(aDeltatime);
 	
 	while (myWorldServerConnection.HasMessages())
@@ -84,24 +86,58 @@ void Network::Client::HandleWorldServerMessages()
 	{
 		ClientEnterAreaMessage msg;
 		myWorldServerConnection.ReadNextMessage(msg);
-		
-		myUniqueID = msg.myClientState.myUniqueID;
-		myPosition = msg.myClientState.myPosition;
-		
-		myAreaServerAddress = Address(msg.myClientState.myAreaServerIP, msg.myClientState.myAreaServerPort);
-		myAreaServerConnection.Disconnect();
-		myAreaServerSocket = Network::UDPSocket();
-		myAreaServerConnection.Init(myAreaServerSocket);
 
-		if (!myAreaServerConnection.Connect(myAreaServerAddress, 10.f, eNETMESSAGE_CLIENT_HANDSHAKE))
+		if (myMigrationInProcess)
 		{
-			std::cout << "Timed out " << std::endl;
+			std::cout << "Error: already in the process of migrating" << std::endl;
+			break;
 		}
+		
+		myMigrationInProcess = true;
+		
+		myMigrateThread = std::thread([&, msg]()
+			{
+				std::cout << "Starting connection" << std::endl;
+				Network::Address areaserver = Network::Address(msg.myClientState.myAreaServerIP, msg.myClientState.myAreaServerPort);
+				Network::UDPSocket socket;
+				Network::UnaryConnection connection;
 
-		ClientValidateTokenMessage validate;
-		validate.myToken    = msg.myToken;
-		validate.myUniqueID = myUniqueID;
-		myAreaServerConnection.Send(validate);
+				connection.Init(socket);
+				connection.Connect(areaserver, 20.f, eNETMESSAGE_CLIENT_HANDSHAKE); // Blocking
+
+				ClientValidateTokenMessage validate;
+				validate.myToken    = msg.myToken;
+				validate.myUniqueID = msg.myClientState.myUniqueID;
+				myUniqueID = msg.myClientState.myUniqueID;
+
+				connection.Send(validate);
+
+				Timer timer;
+
+				while (connection.HasUnackedMessages()) 
+				{
+					connection.Update(timer.Update());
+				}
+
+				std::cout << "Migration complete" << std::endl;
+				std::unique_lock<std::mutex> lock(myMutex);
+
+				myAreaServerSocket.Close();
+
+				std::cout << areaserver.ToString() << std::endl;
+				connection.ClearMessages();
+
+				myAreaServerAddress    = areaserver;
+				myAreaServerConnection = connection;
+				myAreaServerSocket     = socket;
+				myAreaServerConnection.Init(myAreaServerSocket);
+
+				ReliableNetMessage complete(eNETMESSAGE_R_AS_CLIENT_MIGRATION_COMPLETE);
+				myWorldServerConnection.Send(complete);
+
+				myMigrationInProcess   = false;
+			});
+		myMigrateThread.detach();
 		break;
 	}
 
@@ -123,8 +159,8 @@ void Network::Client::HandleAreaServerMessages()
 		{
 			ClientServerPosition msg;
 			myAreaServerConnection.ReadNextMessage(msg);
-			myPosition = msg.myPosition;
 
+			myPosition = msg.myPosition;
 			break;
 		}
 		default:

@@ -18,14 +18,23 @@ int main()
 		std::cout << "Failed to connect: " << (int)client.GetConnectionStatus() << std::endl;
 		return 0;
 	}
-	std::cout << "Connected at slot " << (int)client.GetWorldServerClientSlot() << std::endl;
+	std::cout << "Connected at World Server slot " << (int)client.GetWorldServerClientSlot() << std::endl;
 
 	Timer timer;
-	float time = 0;
-
+	const float frameTime = 0.017f;
+	float time = frameTime;
+	int f = 0;
 	while (client.GetConnectionStatus() != Network::eConnectionStatus::Disconnected)
 	{
-		client.Update(timer.Update());
+		time += timer.Update();
+
+		while (time > frameTime)
+		{
+			time -= frameTime;
+			client.Update(frameTime);
+		}
+		using namespace std::chrono_literals;
+		std::this_thread::sleep_for(10ms); // Simulate game/rendering time
 	}
 
 	return 0;

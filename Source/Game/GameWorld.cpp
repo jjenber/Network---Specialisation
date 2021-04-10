@@ -59,3 +59,12 @@ CommonUtilities::Vector3f GameWorld::GetPosition(entt::entity aEntity) const
 		myWorldRegistry.get<components::Transform>(aEntity).myPosition :
 		CommonUtilities::Vector3f();
 };
+
+void GameWorld::DestroyEntity(entt::entity aEntity)
+{
+	if (myWorldRegistry.valid(aEntity))
+	{
+		myWorldRegistry.destroy(aEntity);
+	}
+}
+

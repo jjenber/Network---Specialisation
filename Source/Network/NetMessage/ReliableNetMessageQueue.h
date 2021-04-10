@@ -1,5 +1,5 @@
 #pragma once
-#include "NetMessage.h"
+#include "NetMessage.hpp"
 #include "Address\Address.h"
 #include "Socket\UDPSocket.h"
 #include <chrono>
@@ -19,6 +19,8 @@ namespace Network
 		void Clear();
 		bool HasReceivedPreviously(const Address& aAddress, unsigned short aSequenceNr);
 		void ClearReceivedSequenceCache(float aDeltatime, float aTimeBeforeRemove);
+
+		size_t GetQueuedCount() const;
 	private:
 		
 		// Wraps a reliable message with meta data to keep track of resends.

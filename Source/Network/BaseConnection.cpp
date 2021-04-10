@@ -90,4 +90,9 @@ namespace Network
 			myReliableNetMessageQueue.ClearReceivedSequenceCache(aDeltatime, 20.f);
 		}
 	}
+
+	bool BaseConnection::HasUnackedMessages() 
+	{
+		return myReliableNetMessageQueue.GetQueuedCount() > 0;
+	}
 }

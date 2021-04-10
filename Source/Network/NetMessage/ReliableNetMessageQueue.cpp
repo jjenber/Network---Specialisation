@@ -93,4 +93,9 @@ namespace Network
 			}
 		}
 	}
+
+	size_t ReliableNetMessageQueue::GetQueuedCount() const
+	{
+		return myQueueItems.size();
+	}
 }

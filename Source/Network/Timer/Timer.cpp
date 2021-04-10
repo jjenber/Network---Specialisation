@@ -11,7 +11,7 @@ float Timer::Update()
 	const auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(myClock.now() - myTimeStamp);
 	const auto total   = std::chrono::duration_cast<std::chrono::microseconds>(myClock.now() - myStart);
 
-	myDeltaTimeInSeconds = static_cast<float>(elapsed.count()) * 0.000001f;
+	myDeltaTimeInSeconds = static_cast<double>(elapsed.count()) * 0.000001f;
 	myTotalTimeInSeconds = static_cast<double>(total.count()) * 0.000001;
 	
 	myTimeStamp = myClock.now();

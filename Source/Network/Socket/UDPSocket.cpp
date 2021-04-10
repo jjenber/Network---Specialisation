@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "UDPSocket.h"
 #include "Address/Address.h"
-#include "NetMessage\NetMessage.h"
+#include "NetMessage\NetMessage.hpp"
 #include <iostream>
 
 Network::UDPSocket::UDPSocket()

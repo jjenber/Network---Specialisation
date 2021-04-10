@@ -1,5 +1,5 @@
 #include "AreaServer.h"
-#include "NetMessage\NetMessage.h"
+#include "NetMessage\NetMessage.hpp"
 #include "Timer\Timer.h"
 
 #include "../Game/Components/Transform.hpp"
@@ -41,6 +41,8 @@ bool AreaServer::Startup()
 
 bool AreaServer::Update(const float aDeltatime)
 {
+	myTime += aDeltatime;
+
 	myWorldServerConnection.Update(aDeltatime);
 	while (myWorldServerConnection.HasMessages())
 	{
@@ -145,6 +147,7 @@ void AreaServer::HandleClientMessage(Network::MessageID_t aMessageID)
 		if (myClientData[msg.mySenderID].myIsConnected && myClientData[msg.mySenderID].myIsValidated)
 		{
 			myGame.SetClientVelocity(myClientData[msg.mySenderID].myLocalID, msg.myVelocity);
+			myClientData[msg.mySenderID].myLastMessageTime = myTime;
 		}
 		break;
 	}
@@ -164,11 +167,12 @@ void AreaServer::HandleClientMessage(Network::MessageID_t aMessageID)
 			{
 				entt::entity clientEntity = myGame.InstantiateClient(queuedClient.myUniqueID, queuedClient.myPosition, queuedClient.myVelocity);
 				
-				ClientData& clientData   = myClientData[msg.mySenderID];
-				clientData.myLocalID     = clientEntity;
-				clientData.myUniqueID    = msg.myUniqueID;
-				clientData.myIsValidated = true;
-				clientData.myIsMigrating = false;
+				ClientData& clientData       = myClientData[msg.mySenderID];
+				clientData.myLocalID         = clientEntity;
+				clientData.myUniqueID        = msg.myUniqueID;
+				clientData.myIsValidated     = true;
+				clientData.myIsMigrating     = false;
+				clientData.myLastMessageTime = myTime;
 
 				myQueuedClients.erase(myQueuedClients.begin() + i);
 				break;
@@ -234,6 +238,7 @@ void AreaServer::OnClientConnected(const Network::Address& aAddress, uint16_t aC
 	std::cout << "Client connected" << std::endl;
 	myClientData[aConnectionSlot].myIsConnected = true;
 	myClientData[aConnectionSlot].myAddress = aAddress;
+	myClientData[aConnectionSlot].myLastMessageTime = myTime;
 }
 
 void AreaServer::SyncClients(const float aDeltatime)
@@ -249,19 +254,24 @@ void AreaServer::SyncClients(const float aDeltatime)
 
 		for (const auto& data : myClientData)
 		{
-			if (data.myIsConnected && data.myIsValidated && !data.myIsMigrating)
+			if (data.myIsConnected && data.myIsValidated)
 			{
 				msg.myPosition = myGame.GetPosition(data.myLocalID);
 				myClientConnections.Send(msg, data.myAddress);
 
 				entityStates.push_back(Network::EntityState(msg.myPosition.x, msg.myPosition.z, data.myUniqueID));
 
-				auto migrate = registry.try_get<components::MigrateClient>(data.myLocalID);
+				ClientData& clientData = myClientData[clientID];
 
-				if (migrate && !myClientData[clientID].myIsMigrating)
+				auto migrate = registry.try_get<components::MigrateClient>(data.myLocalID);
+				if (migrate && !clientData.myIsMigrating)
 				{
-					MigrateClient(myClientData[clientID], *migrate);
+					MigrateClient(clientData, *migrate);
 					registry.remove<components::MigrateClient>(data.myLocalID);
+				}
+				else if (myTime - clientData.myLastMessageTime > Network::Constants::CLIENT_TIME_OUT_S)
+				{
+					ClientTimedOut(clientData);
 				}
 			}
 			++clientID;
@@ -299,4 +309,12 @@ void AreaServer::MigrateClient(ClientData& aClientData, const components::Migrat
 		msg.myVelocity = myGame.GetVelocity(aClientData.myLocalID);
 		myWorldServerConnection.Send(msg);
 	}
+}
+
+void AreaServer::ClientTimedOut(ClientData& aClientData)
+{
+	Network::ClientTimedOutMessage msg(aClientData.myUniqueID);
+	myWorldServerConnection.Send(msg);
+	myGame.GetRegistry().destroy(aClientData.myLocalID);
+	aClientData = ClientData{};
 }

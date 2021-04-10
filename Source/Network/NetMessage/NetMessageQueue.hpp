@@ -1,5 +1,5 @@
 #pragma once
-#include "NetMessage.h"
+#include "NetMessage.hpp"
 #include <array>
 #include <queue>
 #include <string>

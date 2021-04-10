@@ -24,5 +24,7 @@ namespace Network
 
 		constexpr int MAX_RESEND_ATTEMPTS = 10;
 		constexpr int RESEND_WAIT_TIME_MS = 100;
+
+		constexpr float CLIENT_TIME_OUT_S = 5.f;
 	}
 }

@@ -23,6 +23,7 @@ struct Client
 	entt::entity myLocalID;
 	Network::Address myAddress;
 	int myRegion = -1;
+	int myNextRegion = -1;
 	bool myIsMigrating = false;
 };
 

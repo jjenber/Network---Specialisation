@@ -27,7 +27,6 @@ namespace Network
 		eNETMESSAGE_NONE = 0,
 		eNETMESSAGE_SERVER_FULL,
 		eNETMESSAGE_ACKNOWLEDGEMENT,
-		eNETMESSAGE_CHAT,
 
 		// Client
 		eNETMESSAGE_CLIENT_HANDSHAKE,
@@ -50,12 +49,14 @@ namespace Network
 		eNETMESSAGE_R_AS_REQUEST_IDS,
 		eNETMESSAGE_R_AS_REQUEST_IDS_RESPONSE,
 		eNETMESSAGE_R_AS_CLIENT_MIGRATE,
+		eNETMESSAGE_R_AS_CLIENT_MIGRATION_COMPLETE,
+		eNETMESSAGE_R_AS_CLIENT_TIMED_OUT,
 
 		// Reliable Client Messages
-		eNETMESSAGE_R_CLIENT_ABORT_MIGRATE,
 		eNETMESSAGE_R_CLIENT_ENTER_AREA,
 		eNETMESSAGE_R_CLIENT_EXIT_AREA,
 		eNETMESSAGE_R_CLIENT_VALIDATE_TOKEN,
+		eNETMESSAGE_R_CLIENT_VALIDATION_CONFIRMED,
 	};
 
 #pragma pack(push, 1)
@@ -324,6 +325,18 @@ namespace Network
 		CommonUtilities::Vector3f myVelocity;
 		uint8_t myX;
 		uint8_t myY;
+	};
+
+	class ClientTimedOutMessage : public ReliableNetMessage
+	{
+	public:
+		ClientTimedOutMessage(uint32_t aClientUniqueID = UINT32_MAX)
+			: ReliableNetMessage(eNETMESSAGE_R_AS_CLIENT_TIMED_OUT),
+			myClientUniqueID(aClientUniqueID)
+		{
+			mySize = GetSizeOfMessage<ClientTimedOutMessage>();
+		};
+		uint32_t myClientUniqueID;
 	};
 
 #pragma endregion ReliableMessages

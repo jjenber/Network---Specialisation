@@ -24,6 +24,6 @@ private:
 	std::chrono::high_resolution_clock::time_point myTimeStamp;
 	std::chrono::high_resolution_clock::time_point myStart;
 	
-	float	myDeltaTimeInSeconds;
+	double	myDeltaTimeInSeconds;
 	double	myTotalTimeInSeconds;
 };

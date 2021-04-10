@@ -12,6 +12,7 @@ struct ClientData
 	Network::Address myAddress;
 	entt::id_type myUniqueID;
 	entt::entity myLocalID;
+	double myLastMessageTime = 0.f;
 	bool myIsConnected = false;
 	bool myIsValidated = false;
 	bool myIsMigrating = false;
@@ -50,6 +51,7 @@ private:
 
 	void SyncClients(const float aDeltatime);
 	void MigrateClient(ClientData& aClientData, const components::MigrateClient& aComponent);
+	void ClientTimedOut(ClientData& aClientData);
 
 	uint8_t myServerID = UINT8_MAX;
 
@@ -70,4 +72,5 @@ private:
 
 	eAreaServerStatus myStatus;
 	bool myIsRunning;
+	double myTime = 0;
 };

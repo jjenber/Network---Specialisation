@@ -98,9 +98,9 @@ bool WorldServer::CanStartAreaServer() const
 void WorldServer::HandleAreaServerMessages()
 {
 	Network::MessageID_t id = myAreaServerConnection.Peek();
+
 	switch (id)
 	{
-
 	case Network::eNETMESSAGE_R_AS_STATUS:
 	{
 		Network::AreaServerStatus msg;
@@ -176,6 +176,25 @@ void WorldServer::HandleAreaServerMessages()
 		break;
 	}
 
+	case Network::eNETMESSAGE_R_AS_CLIENT_TIMED_OUT:
+	{
+		Network::ClientTimedOutMessage msg;
+		myAreaServerConnection.ReadNextMessage(msg);
+
+		AreaServerInstance& server = myAreaServerInstances[msg.mySenderID];
+		myGameWorld.DestroyEntity(entt::entity(msg.myClientUniqueID));
+		int index = -1;
+		for (int i = 0; i < server.myClients.size(); i++)
+		{
+			if (static_cast<uint32_t>(server.myClients[i]) == msg.myClientUniqueID)
+			{
+				server.myClients.erase(server.myClients.begin() + i);
+				break;
+			}
+		};
+		break;
+	}
+
 	default:
 		std::cout << (int)id << " unhandled message from area server" << std::endl;
 		break;
@@ -190,8 +209,46 @@ void WorldServer::OnAreaServerConnected(int aAreaServerID, const Network::Addres
 
 void WorldServer::HandleClientMessages()
 {
-	Network::MessageID_t id = myAreaServerConnection.Peek();
-	std::cout << "Unhandled message from Client: " << (int)id << std::endl;
+	Network::MessageID_t id = myClientConnections.Peek();
+
+	switch (id)
+	{
+	case Network::eNETMESSAGE_R_AS_CLIENT_MIGRATION_COMPLETE:
+	{
+		Network::ReliableNetMessage msg;
+		myClientConnections.ReadNextMessage(msg);
+		
+		Client& client                        = myClients[msg.mySenderID];
+		client.myIsMigrating = false;
+		
+		if (client.myNextRegion >= 0)
+		{
+			AreaServerInstance& currentAreaServer = myAreaServerInstances[client.myRegion];
+			AreaServerInstance& targetAreaServer  = myAreaServerInstances[client.myNextRegion];
+
+			Network::ClientExitAreaMessage exitMsg(entt::id_type(client.myUniqueID));
+
+			myAreaServerConnection.Send(exitMsg, myAreaServerInstances[client.myRegion].myAddress);
+
+			for (int i = 0; i < currentAreaServer.myClients.size(); i++)
+			{
+				entt::entity entity = currentAreaServer.myClients[i];
+
+				currentAreaServer.myClients.erase(currentAreaServer.myClients.begin() + i);
+				targetAreaServer.myClients.push_back(entity);
+				break;
+			}
+
+			client.myRegion      = client.myNextRegion;
+			client.myNextRegion  = -1;
+		}
+
+		break;
+	}
+	default:
+		std::cout << (int)id << " unhandled message from client" << std::endl;
+		break;
+	}
 }
 
 void WorldServer::OnClientConnected(int aClientID, const Network::Address& aAddress)
@@ -291,9 +348,6 @@ void WorldServer::HandleClientMigration(const Network::ClientMigrateMessage& aMe
 
 	int targetRegion = x + y * REGION_ROW_COL;
 
-	AreaServerInstance& currentAreaServer = myAreaServerInstances[currentArea];
-	AreaServerInstance& targetAreaServer  = myAreaServerInstances[targetRegion];
-
 	int clientindex = 0;
 	for (int i = 0; i < myClients.size(); i++)
 	{
@@ -303,21 +357,21 @@ void WorldServer::HandleClientMigration(const Network::ClientMigrateMessage& aMe
 			break;
 		}
 	}
+
 	assert(clientindex >= 0 && "Failed to find client.");
 
 	Client& client = myClients[clientindex];
-
 	client.myIsMigrating = true;
-	client.myRegion = targetRegion;
-
-	std::cout << "Want to migrate from " << currentArea << " to " << targetRegion << std::endl;
-
-	int token = Random::Range(1, INT_MAX);
+	client.myNextRegion = targetRegion;
 
 	CommonUtilities::Vector3f localPos = aMessage.myPosition;
 	localPos.x -= aMessage.myX * REGION_SIZE;
 	localPos.z -= aMessage.myY * REGION_SIZE;
 	
+	AreaServerInstance& targetAreaServer = myAreaServerInstances[targetRegion];
+	
+	int token = Random::Range(1, INT_MAX);
+
 	Network::ClientEnterAreaMessage enterAreaMsg;
 	enterAreaMsg.myToken = token;
 	enterAreaMsg.myClientState.myPosition       = localPos;
@@ -330,15 +384,4 @@ void WorldServer::HandleClientMigration(const Network::ClientMigrateMessage& aMe
 	
 	myAreaServerConnection.Send(enterAreaMsg, myAreaServerInstances[targetRegion].myAddress);
 	myClientConnections.Send(enterAreaMsg, client.myAddress);
-	
-	Network::ClientExitAreaMessage exitMsg(entt::id_type(client.myUniqueID));
-	myAreaServerConnection.Send(exitMsg, currentAreaServer.myAddress);
-	
-	for (int i = 0; i < currentAreaServer.myClients.size(); i++)
-	{
-		entt::entity entity = currentAreaServer.myClients[i];
-		currentAreaServer.myClients.erase(currentAreaServer.myClients.begin() + i);
-		targetAreaServer.myClients.push_back(entity);
-		break;
-	}
 }

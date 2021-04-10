@@ -47,9 +47,6 @@
     <ClInclude Include="Timer\Timer.h">
       <Filter>Timer</Filter>
     </ClInclude>
-    <ClInclude Include="NetMessage\NetMessage.h">
-      <Filter>NetMessage</Filter>
-    </ClInclude>
     <ClInclude Include="NetMessage\NetMessageQueue.hpp">
       <Filter>NetMessage</Filter>
     </ClInclude>
@@ -67,6 +64,9 @@
     </ClInclude>
     <ClInclude Include="BaseConnection.h">
       <Filter>Connection</Filter>
+    </ClInclude>
+    <ClInclude Include="NetMessage\NetMessage.hpp">
+      <Filter>NetMessage</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -87,9 +87,6 @@
     </ClCompile>
     <ClCompile Include="Timer\Timer.cpp">
       <Filter>Timer</Filter>
-    </ClCompile>
-    <ClCompile Include="NetMessage\NetMessage.cpp">
-      <Filter>NetMessage</Filter>
     </ClCompile>
     <ClCompile Include="NetMessage\ReliableNetMessageQueue.cpp">
       <Filter>NetMessage</Filter>

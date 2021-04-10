@@ -28,6 +28,8 @@ public:
 
 	CommonUtilities::Vector3f GetPosition(entt::entity aEntity) const;
 
+	void DestroyEntity(entt::entity aEntity);
+
 private:
 	entt::registry myWorldRegistry;
 	std::array<Region, REGION_COUNT> myRegions;
